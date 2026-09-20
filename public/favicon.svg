@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <!-- Deep Navy to Midnight gradient for italic E -->
+    <linearGradient id="favEGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#142a54" />
+      <stop offset="50%" stop-color="#0c1833" />
+      <stop offset="100%" stop-color="#070e1f" />
+    </linearGradient>
+
+    <!-- Vibrant Earth Globe Radial -->
+    <radialGradient id="favGlobe" cx="40%" cy="35%" r="65%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="40%" stop-color="#1d4ed8" />
+      <stop offset="85%" stop-color="#1e3a8a" />
+      <stop offset="100%" stop-color="#0a1945" />
+    </radialGradient>
+
+    <!-- Glowing Swoosh Gradient -->
+    <linearGradient id="favSwoosh" x1="0%" y1="0%" x2="100%" y2="50%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#0ea5e9" />
+      <stop offset="100%" stop-color="#0284c7" />
+    </linearGradient>
+  </defs>
+
+  <!-- Clean rounded background badge -->
+  <rect width="120" height="120" rx="28" fill="#ffffff" />
+  
+  <g transform="translate(6, 12) scale(0.9)">
+    <!-- Massive Italic E -->
+    <path 
+      d="M20 14 L80 14 C86 14, 88 18, 83 26 L48 26 C43 26, 41 29, 39 34 L36 43 L68 43 C74 43, 75 47, 70 54 L32 54 L25 76 C23 81, 26 84, 32 84 L76 84 C82 84, 83 89, 77 96 L14 96 C6 96, 4 90, 7 81 L20 14 Z" 
+      fill="url(#favEGrad)"
+    />
+
+    <!-- Earth Globe -->
+    <circle cx="86" cy="50" r="28" fill="url(#favGlobe)" />
+    
+    <!-- Americas continent shapes -->
+    <path d="M74 38 C77 32, 85 33, 90 38 C94 43, 91 50, 85 52 C81 53, 76 47, 74 38 Z" fill="#ffffff" opacity="0.95" />
+    <path d="M86 53 C91 55, 95 62, 92 69 C88 75, 83 74, 82 66 C81 60, 84 55, 86 53 Z" fill="#ffffff" opacity="0.95" />
+    <circle cx="86" cy="50" r="28" fill="none" stroke="#93c5fd" stroke-width="1.2" opacity="0.8" />
+
+    <!-- Sleek orbital crescent swoosh cutting through -->
+    <path 
+      d="M50 56 C70 55, 88 47, 108 34 C112 32, 114 36, 110 40 C95 56, 75 66, 52 65 C48 65, 47 60, 50 56 Z" 
+      fill="url(#favSwoosh)"
+    />
+  </g>
+</svg>

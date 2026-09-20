@@ -1,0 +1,6 @@
+{
+  "name": "ELINOTICIA | La Noticia, Dondequiera que Estés",
+  "description": "ELINOTICIA - Periódico digital independiente con información verificada de República Dominicana y el mundo, opinión, deportes, economía, tecnología y podcasts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
