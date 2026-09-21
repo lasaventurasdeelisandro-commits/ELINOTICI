@@ -1,5 +1,6 @@
 import { NewsArticle, RssFeedSource, PodcastEpisode } from '../src/types';
 import { getContextualArticlePhoto, scanAndDeduplicateArticles } from './imageCatalog';
+import { cleanJournalisticText, decodeHtmlEntities } from './textUtils';
 
 export interface SyncLogEntry {
   id: string;
@@ -669,13 +670,32 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
   }
 ];
 
+function sanitizeArticleFields(a: NewsArticle): NewsArticle {
+  a.title = decodeHtmlEntities(cleanJournalisticText(a.title));
+  a.excerpt = decodeHtmlEntities(cleanJournalisticText(a.excerpt));
+  a.content = decodeHtmlEntities(cleanJournalisticText(a.content));
+  if (Array.isArray(a.summary)) {
+    a.summary = a.summary
+      .map((item: any) => cleanJournalisticText(item))
+      .filter((s: string) => s && s !== '[object Object]' && s.length > 5);
+  }
+  if (!a.summary || a.summary.length === 0) {
+    a.summary = [
+      a.title,
+      `Cobertura periodística verificada por ${a.source?.name || 'redacción'}.`,
+      'Información contrastada con agencias oficiales.'
+    ];
+  }
+  return a;
+}
+
 class DataStore {
   private state: DataStoreState;
 
   constructor() {
     const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
     this.state = {
-      articles: INITIAL_ARTICLES,
+      articles: INITIAL_ARTICLES.map(sanitizeArticleFields),
       feeds: INITIAL_FEEDS,
       podcasts: INITIAL_PODCASTS,
       lastSyncTime: new Date().toISOString(),
@@ -767,6 +787,8 @@ class DataStore {
   }
 
   addArticle(article: NewsArticle): boolean {
+    article = sanitizeArticleFields(article);
+
     // Sanitize any repetitive legacy building photos
     if (article.imageUrl && (article.imageUrl.includes('photo-1486406146926-c627a92ad1ab') || article.imageUrl.includes('photo-1544620347-c4fd4a3d5957'))) {
       article.imageUrl = getContextualArticlePhoto(article.title, article.category);

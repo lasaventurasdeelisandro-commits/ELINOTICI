@@ -51,8 +51,33 @@ const POLITICS_POOLS: ThematicPool[] = [
   },
 ];
 
-// 2. Conflict, Defense, Drones & Security
+// 2. Conflict, Defense, Drones, Justice & International Security
 const DEFENSE_POOLS: ThematicPool[] = [
+  {
+    keywords: [
+      'haití', 'haiti', 'jovenel', 'moïse', 'moise', 'puerto príncipe', 'frontera', 'binacional',
+      'dajabón', 'elías piña', 'extradición', 'magnicidio', 'pedernales', 'kenia', 'misión', 'pandillas'
+    ],
+    photos: [
+      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80', // Diplomatic council & UN delegation
+      'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1200&q=80', // International crisis security chamber
+      'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?auto=format&fit=crop&w=1200&q=80', // Security border surveillance unit
+      'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=1200&q=80', // Geopolitical border checkpoints
+    ],
+  },
+  {
+    keywords: [
+      'asesinato', 'acusados', 'homicidio', 'crimen', 'cárcel', 'prisión', 'detenido', 'detenidos',
+      'arresto', 'juicio', 'condena', 'delito', 'audiencia', 'traslado', 'traslada', 'penitenciario',
+      'tribunales', 'imputados', 'imputado', 'justicia'
+    ],
+    photos: [
+      'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80', // Wooden gavel & courtroom
+      'https://images.unsplash.com/photo-1479142506502-19b3a3b7ff33?auto=format&fit=crop&w=1200&q=80', // Judicial courtroom bench
+      'https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&w=1200&q=80', // Scales of justice
+      'https://images.unsplash.com/photo-1505664194779-8beaceb93744?auto=format&fit=crop&w=1200&q=80', // Judicial legal proceedings
+    ],
+  },
   {
     keywords: ['drone', 'drones', 'ataque', 'moscú', 'ucrania', 'rusia', 'guerra', 'militar', 'misil', 'defensa'],
     photos: [
@@ -72,7 +97,7 @@ const DEFENSE_POOLS: ThematicPool[] = [
     ],
   },
   {
-    keywords: ['justicia', 'tribunal', 'juez', 'fiscalía', 'corrupción', 'abogado', 'procuraduría', 'ley', 'demanda'],
+    keywords: ['tribunal', 'juez', 'fiscalía', 'corrupción', 'abogado', 'procuraduría', 'ley', 'demanda'],
     photos: [
       'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80', // Wooden gavel & law library
       'https://images.unsplash.com/photo-1436450412740-6b988f486c6b?auto=format&fit=crop&w=1200&q=80', // Golden scales of justice
@@ -82,8 +107,34 @@ const DEFENSE_POOLS: ThematicPool[] = [
   },
 ];
 
-// 3. Economy, Markets, Currency, Fuel & Energy
+// 3. Economy, Markets, Currency, Fuel, Wall Street & Labor
 const ECONOMY_POOLS: ThematicPool[] = [
+  {
+    keywords: [
+      'wall street', 's&p 500', 's&p', 'nasdaq', 'bolsa', 'bolsas', 'bolsa de nueva york',
+      'bolsas europeas', 'bancos centrales', 'moderación de la inflación', 'inflación mundial',
+      'impulsa máximos', 'inversionistas', 'acciones', 'mercados financieros', 'dow jones', 'valores'
+    ],
+    photos: [
+      'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80', // Wall Street financial trading displays
+      'https://images.unsplash.com/photo-1535320903710-d993d3d77d29?auto=format&fit=crop&w=1200&q=80', // Financial board ticker numbers
+      'https://images.unsplash.com/photo-1642543492481-44e81e3914a7?auto=format&fit=crop&w=1200&q=80', // Financial trend analysis
+      'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80', // Macroeconomic data analytics screen
+    ],
+  },
+  {
+    keywords: [
+      'ocupados', 'ocupación', 'empleo', 'empleos', 'trabajo', 'trabajadores', 'mercado laboral',
+      'salario', 'sueldo', 'interanual', 'fuerza laboral', 'desempleo', 'ministerio de trabajo',
+      'crece', 'empresa', 'negocio', 'pyme'
+    ],
+    photos: [
+      'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80', // Modern productive workforce team
+      'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80', // Professional team collaboration
+      'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=1200&q=80', // Workplace employment statistics
+      'https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80', // Strategic enterprise consultation
+    ],
+  },
   {
     keywords: ['gasolina', 'combustible', 'petróleo', 'barril', 'opep', 'diésel', 'glp'],
     photos: [
@@ -321,14 +372,30 @@ export function getContextualArticlePhoto(
 ): string {
   const text = (title + ' ' + category).toLowerCase();
 
-  // Search through all thematic pools for matching keywords
+  // 1. Calculate relevance score for each pool based on matched keywords
+  let bestPool: ThematicPool | null = null;
+  let bestScore = 0;
+
   for (const pool of ALL_POOLS) {
-    if (pool.keywords.some(kw => text.includes(kw))) {
-      for (const photo of pool.photos) {
-        if (!usedImages || !usedImages.has(photo)) {
-          usedImages?.add(photo);
-          return photo;
-        }
+    let poolScore = 0;
+    for (const kw of pool.keywords) {
+      if (text.includes(kw)) {
+        // Longer keyword matches indicate higher specificity (e.g. "wall street", "jovenel moïse", "bancos centrales")
+        poolScore += kw.length >= 8 ? 6 : (kw.length >= 4 ? 3 : 1);
+      }
+    }
+    if (poolScore > bestScore) {
+      bestScore = poolScore;
+      bestPool = pool;
+    }
+  }
+
+  // If a thematic pool matches, pick an unused photo from it
+  if (bestPool && bestScore > 0) {
+    for (const photo of bestPool.photos) {
+      if (!usedImages || !usedImages.has(photo)) {
+        usedImages?.add(photo);
+        return photo;
       }
     }
   }

@@ -1,4 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
+import { cleanJournalisticText, decodeHtmlEntities } from "./textUtils";
 
 // Lazy-initialized Gemini client
 let aiClient: GoogleGenAI | null = null;
@@ -84,6 +85,11 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
       const responseText = response.text?.trim() || "";
       if (responseText) {
         const parsed = JSON.parse(responseText);
+        const rawSummary = Array.isArray(parsed.summary) ? parsed.summary : [];
+        const cleanSummary = rawSummary
+          .map((item: any) => cleanJournalisticText(item))
+          .filter((str: string) => str && str !== '[object Object]' && str.length > 5);
+
         return {
           isVerified: Boolean(parsed.isVerified ?? true),
           credibilityScore: Number(parsed.credibilityScore ?? 95),
@@ -92,13 +98,13 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
           antiSpamChecked: true,
           duplicateChecked: true,
           keyFactsVerified: Array.isArray(parsed.keyFactsVerified) && parsed.keyFactsVerified.length > 0 
-            ? parsed.keyFactsVerified 
+            ? parsed.keyFactsVerified.map((f: any) => cleanJournalisticText(f))
             : ['Información contrastada con agencias', 'Datos institucionales consistentes'],
-          summary: Array.isArray(parsed.summary) && parsed.summary.length > 0
-            ? parsed.summary
+          summary: cleanSummary.length > 0
+            ? cleanSummary
             : createFallbackSummary(title, content),
           tags: Array.isArray(parsed.tags) && parsed.tags.length > 0
-            ? parsed.tags
+            ? parsed.tags.map((t: any) => cleanJournalisticText(t))
             : createFallbackTags(title, category),
         };
       }
@@ -157,27 +163,31 @@ function createSmartFallbackVerification(
 }
 
 function createFallbackSummary(title: string, content: string): string[] {
-  const clean = content.replace(/<[^>]*>/g, '').trim();
-  const sentences = clean.split(/(?<=[.?!])\s+/).filter(s => s.length > 25);
+  const clean = cleanJournalisticText(content);
+  const cleanTitleStr = cleanJournalisticText(title);
+  const sentences = clean
+    .split(/(?<=[.?!])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 25 && !s.includes('[object') && !s.includes('undefined'));
 
   if (sentences.length >= 3) {
     return [
-      sentences[0].slice(0, 160) + (sentences[0].length > 160 ? '...' : ''),
-      sentences[1].slice(0, 160) + (sentences[1].length > 160 ? '...' : ''),
-      sentences[2].slice(0, 160) + (sentences[2].length > 160 ? '...' : ''),
+      sentences[0].slice(0, 180) + (sentences[0].length > 180 ? '...' : ''),
+      sentences[1].slice(0, 180) + (sentences[1].length > 180 ? '...' : ''),
+      sentences[2].slice(0, 180) + (sentences[2].length > 180 ? '...' : ''),
     ];
   } else if (sentences.length > 0) {
     return [
-      `Información principal: ${title}`,
+      `Hecho central: ${cleanTitleStr}`,
       sentences[0].slice(0, 180),
-      'Análisis continuo en desarrollo desde la redacción de ELINOTICIA.'
+      'Cobertura informativa en desarrollo y contrastada con fuentes directas.'
     ];
   }
 
   return [
-    `Desarrollo informativo: ${title}.`,
-    'Confirmación de datos por corresponsales y fuentes oficiales.',
-    'Actualización periódica para los lectores de ELINOTICIA.'
+    `Desarrollo noticioso: ${cleanTitleStr}.`,
+    'Confirmación de datos por corresponsales y fuentes oficiales contrastadas.',
+    'Actualización periódica para los lectores de El Faro Quisqueya.'
   ];
 }
 
@@ -260,10 +270,14 @@ ${content.slice(0, 1000)}`;
 
       const json = JSON.parse(response.text?.trim() || "{}");
       if (json.title) {
+        const transSummary = (Array.isArray(json.summary) ? json.summary : summary)
+          .map((s: any) => cleanJournalisticText(s))
+          .filter((s: string) => s && s !== '[object Object]');
+
         return {
-          title: json.title,
-          summary: Array.isArray(json.summary) ? json.summary : summary,
-          content: json.content || content
+          title: cleanJournalisticText(json.title),
+          summary: transSummary.length > 0 ? transSummary : summary,
+          content: cleanJournalisticText(json.content) || content
         };
       }
     } catch (e) {

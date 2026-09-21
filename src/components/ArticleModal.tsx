@@ -6,6 +6,7 @@ import {
 import { NewsArticle, SupportedLanguage } from '../types';
 import { SocialShareBar } from './SocialShareBar';
 import { SUPPORTED_LANGUAGES, t } from '../utils/translations';
+import { decodeHtmlEntities, formatSummaryPoint, cleanSummaryArray } from '../utils/textUtils';
 
 interface ArticleModalProps {
   article: NewsArticle | null;
@@ -104,9 +105,13 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
     }
   };
 
-  const title = translatedData ? translatedData.title : article.title;
-  const summary = translatedData ? translatedData.summary : article.summary;
-  const content = translatedData ? translatedData.content : article.content;
+  const rawTitle = translatedData ? translatedData.title : article.title;
+  const rawSummary = translatedData ? translatedData.summary : article.summary;
+  const rawContent = translatedData ? translatedData.content : article.content;
+
+  const title = decodeHtmlEntities(rawTitle);
+  const summary = cleanSummaryArray(rawSummary);
+  const content = decodeHtmlEntities(rawContent);
 
   const formattedDate = new Intl.DateTimeFormat('es-DO', {
     weekday: 'long',
@@ -234,7 +239,34 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             </div>
           </div>
 
-          {/* AI Executive Summary Box */}
+          {/* Main Hero Photo */}
+          <div className="rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800">
+            <img
+              src={article.imageUrl}
+              alt={title}
+              className="w-full max-h-[440px] object-cover"
+              onError={(e) => {
+                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1200&q=80';
+              }}
+            />
+            {article.imageCaption && (
+              <p className="p-2.5 text-xs italic text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 text-center font-reading">
+                {decodeHtmlEntities(article.imageCaption)}
+              </p>
+            )}
+          </div>
+
+          {/* Article Full Editorial Content */}
+          <div className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200 font-reading text-base sm:text-lg leading-relaxed space-y-4">
+            {content.split('\n\n').map((paragraph, idx) => (
+              <p key={idx}>{paragraph}</p>
+            ))}
+          </div>
+
+          {/* Social Share Bar */}
+          <SocialShareBar article={article} variant="full" />
+
+          {/* AI Executive Summary Box - Posicionado debajo de Compartir esta noticia */}
           <div className="bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/30 rounded-xl p-4 sm:p-5">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2 text-sm font-bold text-amber-950 dark:text-amber-300">
@@ -250,7 +282,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               {summary.map((point, idx) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-amber-600 font-bold text-base leading-none mt-1">✓</span>
-                  <span>{point}</span>
+                  <span>{formatSummaryPoint(point)}</span>
                 </li>
               ))}
             </ul>
@@ -260,38 +292,11 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               <div className="mt-3 pt-3 border-t border-amber-500/20 text-xs text-stone-600 dark:text-stone-400 flex flex-wrap items-center gap-x-4 gap-y-1">
                 <span className="font-bold text-emerald-700 dark:text-emerald-400">Verificación de Hechos:</span>
                 {article.aiVerification.keyFactsVerified.map((fact, idx) => (
-                  <span key={idx}>• {fact}</span>
+                  <span key={idx}>• {decodeHtmlEntities(fact)}</span>
                 ))}
               </div>
             )}
           </div>
-
-          {/* Main Hero Photo */}
-          <div className="rounded-xl overflow-hidden bg-stone-100 dark:bg-stone-800">
-            <img
-              src={article.imageUrl}
-              alt={article.title}
-              className="w-full max-h-[440px] object-cover"
-              onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1200&q=80';
-              }}
-            />
-            {article.imageCaption && (
-              <p className="p-2.5 text-xs italic text-stone-500 dark:text-stone-400 bg-stone-100 dark:bg-stone-800 text-center font-reading">
-                {article.imageCaption}
-              </p>
-            )}
-          </div>
-
-          {/* Article Full Editorial Content */}
-          <div className="prose dark:prose-invert max-w-none text-stone-800 dark:text-stone-200 font-reading text-base sm:text-lg leading-relaxed space-y-4">
-            {content.split('\n\n').map((paragraph, idx) => (
-              <p key={idx}>{paragraph}</p>
-            ))}
-          </div>
-
-          {/* Social Share Bar */}
-          <SocialShareBar article={article} variant="full" />
 
           {/* Tags */}
           <div className="pt-2">

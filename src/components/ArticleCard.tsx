@@ -6,6 +6,7 @@ import {
 import { NewsArticle } from '../types';
 import { SocialShareBar } from './SocialShareBar';
 import { t } from '../utils/translations';
+import { decodeHtmlEntities, formatSummaryPoint } from '../utils/textUtils';
 
 interface ArticleCardProps {
   article: NewsArticle;
@@ -85,12 +86,12 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
                 onClick={() => onSelect(article)}
                 className="text-xl sm:text-2xl lg:text-3xl font-bold font-serif leading-tight text-stone-900 dark:text-stone-50 cursor-pointer hover:text-amber-800 dark:hover:text-amber-400 transition mb-3"
               >
-                {article.title}
+                {decodeHtmlEntities(article.title)}
               </h2>
 
               {/* Excerpt */}
               <p className="text-sm text-stone-600 dark:text-stone-300 line-clamp-3 mb-4 font-reading leading-relaxed">
-                {article.excerpt}
+                {decodeHtmlEntities(article.excerpt)}
               </p>
 
               {/* AI Executive Summary Snippet */}
@@ -100,10 +101,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
                   <span>Resumen IA en 3 Puntos:</span>
                 </div>
                 <ul className="space-y-1 text-xs text-stone-700 dark:text-stone-300">
-                  {article.summary.slice(0, 2).map((item, idx) => (
+                  {(article.summary || []).slice(0, 2).map((item, idx) => (
                     <li key={idx} className="flex items-start gap-1.5">
                       <span className="text-amber-600 dark:text-amber-400 font-bold">•</span>
-                      <span className="line-clamp-2">{item}</span>
+                      <span className="line-clamp-2">{formatSummaryPoint(item)}</span>
                     </li>
                   ))}
                 </ul>
@@ -208,11 +209,11 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             onClick={() => onSelect(article)}
             className="text-base sm:text-lg font-bold font-serif leading-snug text-stone-900 dark:text-stone-50 cursor-pointer hover:text-amber-800 dark:hover:text-amber-400 transition mb-2"
           >
-            {article.title}
+            {decodeHtmlEntities(article.title)}
           </h3>
 
           <p className="text-xs text-stone-600 dark:text-stone-300 font-reading line-clamp-2 leading-relaxed mb-3">
-            {article.excerpt}
+            {decodeHtmlEntities(article.excerpt)}
           </p>
 
           {/* AI Summary Expander */}
@@ -229,10 +230,10 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             {showSummary && (
               <div className="mt-2 p-2.5 bg-amber-500/10 dark:bg-amber-500/5 rounded border border-amber-500/20 text-xs text-stone-800 dark:text-stone-200">
                 <ul className="space-y-1">
-                  {article.summary.map((point, idx) => (
+                  {(article.summary || []).map((point, idx) => (
                     <li key={idx} className="flex items-start gap-1">
                       <span className="text-amber-600 font-bold">•</span>
-                      <span>{point}</span>
+                      <span>{formatSummaryPoint(point)}</span>
                     </li>
                   ))}
                 </ul>

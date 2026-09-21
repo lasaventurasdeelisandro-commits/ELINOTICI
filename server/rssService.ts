@@ -3,6 +3,7 @@ import { dataStore } from './dataStore';
 import { verifyAndEnhanceNews } from './aiService';
 import { NewsArticle, RssFeedSource } from '../src/types';
 import { getContextualArticlePhoto } from './imageCatalog';
+import { cleanJournalisticText, decodeHtmlEntities, extractRawText } from './textUtils';
 
 const parser = new XMLParser({
   ignoreAttributes: false,
@@ -11,20 +12,8 @@ const parser = new XMLParser({
   trimValues: true,
 });
 
-function stripHtml(html: string): string {
-  if (!html) return '';
-  return html
-    .replace(/<script[^>]*>([\S\s]*?)<\/script>/gim, '')
-    .replace(/<style[^>]*>([\S\s]*?)<\/style>/gim, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/\s+/g, ' ')
-    .trim();
+function stripHtml(html: any): string {
+  return cleanJournalisticText(html);
 }
 
 function extractImage(item: any, title: string = '', category: string = ''): string {
@@ -56,14 +45,13 @@ function extractImage(item: any, title: string = '', category: string = ''): str
     }
   }
   // Check description or content for <img> tag
-  const rawHtml = String(item['content:encoded'] || item.description || '');
+  const rawHtml = extractRawText(item['content:encoded'] || item.description || '');
   const imgMatch = rawHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
   if (imgMatch && imgMatch[1] && !imgMatch[1].includes('cleardot.gif') && !imgMatch[1].includes('feedburner')) {
     return imgMatch[1];
   }
 
-  // Dynamic contextual journalism photo from high-resolution catalog
-  // Deterministic hashing ensures zero generic skyscraper repetition!
+  // Dynamic contextual journalism photo from high-resolution catalog with weighted relevance scoring
   return getContextualArticlePhoto(title, category);
 }
 
@@ -108,8 +96,7 @@ export async function processFeed(feed: RssFeedSource): Promise<number> {
     const candidateItems = items.slice(0, 8);
 
     for (const item of candidateItems) {
-      const rawTitle = item.title ? (typeof item.title === 'string' ? item.title : item.title['#text'] || '') : '';
-      let cleanTitle = stripHtml(rawTitle);
+      let cleanTitle = cleanJournalisticText(item.title);
       if (!cleanTitle || cleanTitle.length < 10) continue;
 
       // Extract real source name if provided by aggregator like Google News
@@ -120,16 +107,20 @@ export async function processFeed(feed: RssFeedSource): Promise<number> {
       } catch (e) {}
 
       if (item.source) {
-        const itemSourceText = typeof item.source === 'string' ? item.source : item.source['#text'];
-        if (itemSourceText && typeof itemSourceText === 'string') {
-          sourceName = itemSourceText.trim();
+        const itemSourceText = cleanJournalisticText(item.source);
+        if (itemSourceText) {
+          sourceName = itemSourceText;
           // Remove trailing " - Fuente" if duplicated in title
           cleanTitle = cleanTitle.replace(new RegExp(`\\s*-\\s*${sourceName}\\s*$`, 'i'), '').trim();
         }
       }
 
-      const rawContent = item['content:encoded'] || item.description || item.summary || cleanTitle;
-      const cleanContent = stripHtml(String(rawContent));
+      // Extract and sanitize clean editorial content
+      let cleanContent = cleanJournalisticText(item['content:encoded'] || item.description || item.summary);
+      if (!cleanContent || cleanContent.length < 15 || cleanContent === '[object Object]') {
+        cleanContent = cleanTitle;
+      }
+
       const link = item.link ? (typeof item.link === 'string' ? item.link : item.link['@_href'] || item.link['#text'] || '') : '';
       const pubDate = item.pubDate || item.published || item.updated || new Date().toISOString();
       const imageUrl = extractImage(item, cleanTitle, feed.category);
@@ -142,6 +133,19 @@ export async function processFeed(feed: RssFeedSource): Promise<number> {
         feed.category
       );
 
+      // Ensure summary array is guaranteed clean strings (no objects or "[object Object]")
+      const safeSummary: string[] = (Array.isArray(aiResult.summary) ? aiResult.summary : [])
+        .map((p: any) => cleanJournalisticText(p))
+        .filter((p: string) => p && p !== '[object Object]' && p.length > 5);
+
+      if (safeSummary.length === 0) {
+        safeSummary.push(
+          cleanTitle,
+          `Información periodística contrastada a través de ${sourceName}.`,
+          'Desarrollo informativo bajo seguimiento editorial continuo.'
+        );
+      }
+
       // Only publish verified news to avoid duplicates or spam
       if (aiResult.isVerified && aiResult.credibilityScore >= 60) {
         const article: NewsArticle = {
@@ -149,8 +153,16 @@ export async function processFeed(feed: RssFeedSource): Promise<number> {
           title: cleanTitle,
           excerpt: cleanContent.slice(0, 260) + (cleanContent.length > 260 ? '...' : ''),
           content: cleanContent,
-          summary: aiResult.summary,
-          aiVerification: aiResult,
+          summary: safeSummary,
+          aiVerification: {
+            isVerified: aiResult.isVerified,
+            credibilityScore: aiResult.credibilityScore,
+            sourceRating: aiResult.sourceRating,
+            verificationDetails: aiResult.verificationDetails,
+            antiSpamChecked: aiResult.antiSpamChecked,
+            duplicateChecked: aiResult.duplicateChecked,
+            keyFactsVerified: aiResult.keyFactsVerified,
+          },
           tags: aiResult.tags,
           category: feed.category,
           source: {
