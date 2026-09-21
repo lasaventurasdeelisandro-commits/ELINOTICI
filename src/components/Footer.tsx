@@ -1,11 +1,13 @@
 import React from 'react';
-import { ShieldCheck, Heart, Rss, Mail, Globe, Award, Sparkles } from 'lucide-react';
+import { ShieldCheck, Heart, Rss, Mail, Globe, Award, Sparkles, DollarSign, Megaphone, FileText } from 'lucide-react';
 import { BrandLogo } from './BrandLogo';
+import { AdPlacement } from '../types';
 
 interface FooterProps {
   onOpenSubscription: () => void;
   onOpenRssManager: () => void;
   onOpenPreferences: () => void;
+  onOpenAdPortal?: (placement?: AdPlacement) => void;
   onCategorySelect: (cat: any) => void;
 }
 
@@ -13,6 +15,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenSubscription,
   onOpenRssManager,
   onOpenPreferences,
+  onOpenAdPortal,
   onCategorySelect,
 }) => {
   return (
@@ -92,6 +95,39 @@ export const Footer: React.FC<FooterProps> = ({
                   <Award className="w-3.5 h-3.5 text-amber-500" />
                   Suscripción Digital Plus
                 </button>
+              </li>
+              {onOpenAdPortal && (
+                <>
+                  <li>
+                    <button
+                      onClick={() => onOpenAdPortal('header_top')}
+                      className="hover:text-amber-400 text-amber-300/90 font-medium flex items-center gap-1.5 transition"
+                    >
+                      <Megaphone className="w-3.5 h-3.5 text-amber-400" />
+                      Pauta Publicitaria Directa
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => onOpenAdPortal()}
+                      className="hover:text-white flex items-center gap-1.5 transition"
+                    >
+                      <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                      Tarifario & Espacios 2026
+                    </button>
+                  </li>
+                </>
+              )}
+              <li>
+                <a
+                  href="/ads.txt"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-1.5 transition text-stone-400"
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  Archivo ads.txt (AdSense)
+                </a>
               </li>
               <li>
                 <span className="text-stone-500">Hemeroteca Digital</span>

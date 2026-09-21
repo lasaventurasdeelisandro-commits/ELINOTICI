@@ -3,16 +3,20 @@ import {
   X, ShieldCheck, Sparkles, Clock, Globe, Volume2, 
   VolumeX, Play, Pause, ExternalLink, Tag, BookOpen, AlertCircle
 } from 'lucide-react';
-import { NewsArticle, SupportedLanguage } from '../types';
+import { NewsArticle, SupportedLanguage, AdPlacement, AdSenseConfig, AdvertiserCampaign } from '../types';
 import { SocialShareBar } from './SocialShareBar';
 import { SUPPORTED_LANGUAGES, t } from '../utils/translations';
 import { decodeHtmlEntities, formatSummaryPoint, cleanSummaryArray } from '../utils/textUtils';
+import { AdBanner } from './AdBanner';
 
 interface ArticleModalProps {
   article: NewsArticle | null;
   onClose: () => void;
   onTagClick: (tag: string) => void;
   lang: SupportedLanguage;
+  onOpenAdPortal?: (placement?: AdPlacement) => void;
+  adSenseConfig?: AdSenseConfig;
+  campaigns?: AdvertiserCampaign[];
 }
 
 export const ArticleModal: React.FC<ArticleModalProps> = ({
@@ -20,6 +24,9 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
   onClose,
   onTagClick,
   lang: currentLang,
+  onOpenAdPortal,
+  adSenseConfig,
+  campaigns,
 }) => {
   if (!article) return null;
 
@@ -265,6 +272,18 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
 
           {/* Social Share Bar */}
           <SocialShareBar article={article} variant="full" />
+
+          {/* In-Article Sponsored Banner (AdSense or Direct Sponsor) */}
+          {onOpenAdPortal && (
+            <div className="pt-2">
+              <AdBanner
+                placement="article_modal"
+                onOpenAdPortal={onOpenAdPortal}
+                config={adSenseConfig}
+                campaigns={campaigns}
+              />
+            </div>
+          )}
 
           {/* AI Executive Summary Box - Posicionado debajo de Compartir esta noticia */}
           <div className="bg-amber-500/10 dark:bg-amber-500/5 border border-amber-500/30 rounded-xl p-4 sm:p-5">

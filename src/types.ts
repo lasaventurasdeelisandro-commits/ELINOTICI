@@ -190,3 +190,69 @@ export interface MarketRatesResponse {
   fiat: CurrencyRateItem[];
   crypto: CurrencyRateItem[];
 }
+
+export type AdPlacement = 'header_top' | 'in_feed' | 'sidebar' | 'article_modal' | 'footer_banner';
+export type AdNetworkMode = 'hybrid' | 'direct_only' | 'adsense_only';
+
+export interface DirectAdPlan {
+  id: string;
+  name: string;
+  placement: AdPlacement;
+  dimensions: string;
+  pricePerDayDOP: number;
+  pricePerDayUSD: number;
+  estimatedImpressionsDay: string;
+  description: string;
+  badge?: string;
+  isPopular?: boolean;
+}
+
+export interface AdvertiserCampaign {
+  id: string;
+  advertiserName: string;
+  businessCategory: string;
+  contactEmail: string;
+  contactPhone: string;
+  rncTaxId?: string;
+  adTitle: string;
+  adSubtitle?: string;
+  targetUrl: string;
+  imageUrl: string;
+  callToAction: string;
+  placement: AdPlacement;
+  startDate: string;
+  endDate: string;
+  days: number;
+  totalPriceDOP: number;
+  totalPriceUSD: number;
+  paymentMethod: 'banco_popular' | 'banreservas' | 'banco_bhd' | 'card' | 'whatsapp_billing';
+  paymentStatus: 'paid' | 'pending_verification';
+  status: 'active' | 'pending_review' | 'expired';
+  clicksCount: number;
+  impressionsCount: number;
+  createdAt: string;
+}
+
+export interface AdSenseConfig {
+  enabled: boolean;
+  publisherId: string;
+  slots: {
+    header_top: string;
+    in_feed: string;
+    sidebar: string;
+    article_modal: string;
+    footer_banner: string;
+  };
+  testMode: boolean;
+  monetizationMode: AdNetworkMode;
+}
+
+export interface AdMonetizationState {
+  config: AdSenseConfig;
+  campaigns: AdvertiserCampaign[];
+  rateCard: DirectAdPlan[];
+  totalDirectRevenueDOP: number;
+  totalDirectRevenueUSD: number;
+  totalImpressions: number;
+  totalClicks: number;
+}

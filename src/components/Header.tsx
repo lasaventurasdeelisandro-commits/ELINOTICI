@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { 
   Search, Moon, Sun, Bell, Sliders, Rss, 
-  Globe, Sparkles, Check, ChevronDown, Award, Volume2
+  Globe, Sparkles, Check, ChevronDown, Award, Volume2, Megaphone
 } from 'lucide-react';
-import { NewsCategory, SupportedLanguage, UserPreferences } from '../types';
+import { NewsCategory, SupportedLanguage, UserPreferences, AdPlacement } from '../types';
 import { SUPPORTED_LANGUAGES, t } from '../utils/translations';
 import { BrandLogo } from './BrandLogo';
 
@@ -17,6 +17,7 @@ interface HeaderProps {
   onOpenPreferences: () => void;
   onOpenSubscription: () => void;
   onOpenRssManager: () => void;
+  onOpenAdPortal?: (placement?: AdPlacement) => void;
   onOpenPodcastPlayer?: () => void;
   isSyncing: boolean;
   onTriggerRefresh: () => void;
@@ -32,6 +33,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenPreferences,
   onOpenSubscription,
   onOpenRssManager,
+  onOpenAdPortal,
   isSyncing,
   onTriggerRefresh,
 }) => {
@@ -163,6 +165,19 @@ export const Header: React.FC<HeaderProps> = ({
                 3h
               </span>
             </button>
+
+            {/* Monetization & Advertising Button */}
+            {onOpenAdPortal && (
+              <button
+                id="header-ads-btn"
+                onClick={() => onOpenAdPortal('header_top')}
+                className="p-1.5 px-2 rounded text-emerald-800 dark:text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-400/30 transition flex items-center gap-1.5 font-bold"
+                title="Monetización Google AdSense & Publicidad Directa para Anunciantes"
+              >
+                <Megaphone className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                <span className="hidden lg:inline text-xs">Pautar Anuncio</span>
+              </button>
+            )}
 
             {/* Subscription Button */}
             <button

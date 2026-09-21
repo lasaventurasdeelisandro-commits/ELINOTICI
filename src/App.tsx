@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   NewsArticle, RssFeedSource, PodcastEpisode, UserPreferences, 
-  NewsCategory, SupportedLanguage 
+  NewsCategory, SupportedLanguage, AdMonetizationState, 
+  AdPlacement, AdvertiserCampaign, AdSenseConfig, DirectAdPlan
 } from './types';
 import { INITIAL_ARTICLES, INITIAL_FEEDS, INITIAL_PODCASTS } from './data/initialData';
 import { executeClientRssSync } from './services/clientRssSync';
@@ -19,10 +20,12 @@ import { RssConfigModal } from './components/RssConfigModal';
 import { PreferencesModal } from './components/PreferencesModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { NotificationToast } from './components/NotificationToast';
+import { AdBanner } from './components/AdBanner';
+import { AdvertisingModal } from './components/AdvertisingModal';
 import { Footer } from './components/Footer';
 import { 
   Flame, Sparkles, Filter, RefreshCw, AlertCircle, 
-  Award, Bell, CheckCircle2, ChevronRight 
+  Award, Bell, CheckCircle2, ChevronRight, Megaphone
 } from 'lucide-react';
 import { t } from './utils/translations';
 
@@ -101,6 +104,31 @@ export default function App() {
   const [isSubscriptionOpen, setIsSubscriptionOpen] = useState(false);
   const [isRssManagerOpen, setIsRssManagerOpen] = useState(false);
 
+  // Advertisement & Monetization State (Google AdSense + Direct Sponsors)
+  const [isAdPortalOpen, setIsAdPortalOpen] = useState(false);
+  const [selectedAdPlacement, setSelectedAdPlacement] = useState<AdPlacement>('header_top');
+  const [adMonetization, setAdMonetization] = useState<AdMonetizationState>({
+    config: {
+      enabled: true,
+      publisherId: 'ca-pub-9842510294719283',
+      slots: {
+        header_top: '1029384756',
+        in_feed: '2938475610',
+        sidebar: '3847561029',
+        article_modal: '4756102938',
+        footer_banner: '5610293847',
+      },
+      testMode: false,
+      monetizationMode: 'hybrid',
+    },
+    campaigns: [],
+    rateCard: [],
+    totalDirectRevenueDOP: 0,
+    totalDirectRevenueUSD: 0,
+    totalImpressions: 0,
+    totalClicks: 0,
+  });
+
   // Push Notifications
   const [activePushToast, setActivePushToast] = useState<NewsArticle | null>(null);
   const [seenArticleIds, setSeenArticleIds] = useState<Set<string>>(new Set());
@@ -165,12 +193,20 @@ export default function App() {
   const loadData = useCallback(async (isSilent = false) => {
     if (!isSilent && articles.length === 0) setIsLoading(true);
     try {
-      const [newsRes, feedsRes, podcastsRes, statsRes] = await Promise.all([
+      const [newsRes, feedsRes, podcastsRes, statsRes, adsRes] = await Promise.all([
         fetch('/api/news?limit=250').catch(() => null),
         fetch('/api/feeds').catch(() => null),
         fetch('/api/podcasts').catch(() => null),
         fetch('/api/stats').catch(() => null),
+        fetch('/api/ads').catch(() => null),
       ]);
+
+      if (adsRes && adsRes.ok) {
+        const adsData = await adsRes.json();
+        if (adsData.success && adsData.data) {
+          setAdMonetization(adsData.data);
+        }
+      }
 
       if (newsRes && newsRes.ok) {
         setIsServerMode(true);
@@ -412,6 +448,28 @@ export default function App() {
     updatePreferences({ subscriptionTier: tier, email });
   };
 
+  // Advertising & Monetization Handlers
+  const handleOpenAdPortal = (placement?: AdPlacement) => {
+    if (placement) setSelectedAdPlacement(placement);
+    setIsAdPortalOpen(true);
+  };
+
+  const handleCampaignCreated = (newCamp: AdvertiserCampaign) => {
+    setAdMonetization((prev) => ({
+      ...prev,
+      campaigns: [newCamp, ...prev.campaigns],
+      totalDirectRevenueDOP: prev.totalDirectRevenueDOP + (newCamp.totalPriceDOP || 0),
+      totalDirectRevenueUSD: prev.totalDirectRevenueUSD + (newCamp.totalPriceUSD || 0),
+    }));
+  };
+
+  const handleConfigUpdated = (newConfig: AdSenseConfig) => {
+    setAdMonetization((prev) => ({
+      ...prev,
+      config: newConfig,
+    }));
+  };
+
   // Filter articles based on category, topics, tag, search
   const filteredArticles = useMemo(() => {
     return articles.filter((art) => {
@@ -479,6 +537,7 @@ export default function App() {
         onOpenPreferences={() => setIsPreferencesOpen(true)}
         onOpenSubscription={() => setIsSubscriptionOpen(true)}
         onOpenRssManager={() => setIsRssManagerOpen(true)}
+        onOpenAdPortal={handleOpenAdPortal}
         isSyncing={isSyncing}
         onTriggerRefresh={handleTriggerSync}
       />
@@ -492,6 +551,16 @@ export default function App() {
         onSelectArticle={(art) => setSelectedArticle(art)}
         lang={preferences.language}
       />
+
+      {/* Top Leaderboard Ad Banner (Google AdSense / Direct Sponsor) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+        <AdBanner
+          placement="header_top"
+          onOpenAdPortal={handleOpenAdPortal}
+          config={adMonetization?.config}
+          campaigns={adMonetization?.campaigns}
+        />
+      </div>
 
       {/* 3. Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 flex-1 w-full space-y-10">
@@ -608,6 +677,14 @@ export default function App() {
                   </section>
                 )}
 
+                {/* In-Feed Mid-Page Banner (Google AdSense / Direct Sponsor) */}
+                <AdBanner
+                  placement="in_feed"
+                  onOpenAdPortal={handleOpenAdPortal}
+                  config={adMonetization?.config}
+                  campaigns={adMonetization?.campaigns}
+                />
+
                 {/* 2. THREE-COLUMN BROADSHEET GRID */}
                 <section className="space-y-4">
                   <div className="flex items-center justify-between border-b-2 border-stone-900 dark:border-stone-100 pb-1.5">
@@ -681,11 +758,22 @@ export default function App() {
         )}
       </main>
 
+      {/* Pre-Footer Leaderboard Banner (Google AdSense / Direct Sponsor) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+        <AdBanner
+          placement="footer_banner"
+          onOpenAdPortal={handleOpenAdPortal}
+          config={adMonetization?.config}
+          campaigns={adMonetization?.campaigns}
+        />
+      </div>
+
       {/* 4. Footer */}
       <Footer
         onOpenSubscription={() => setIsSubscriptionOpen(true)}
         onOpenRssManager={() => setIsRssManagerOpen(true)}
         onOpenPreferences={() => setIsPreferencesOpen(true)}
+        onOpenAdPortal={handleOpenAdPortal}
         onCategorySelect={(cat) => setCurrentCategory(cat)}
       />
 
@@ -700,6 +788,9 @@ export default function App() {
           setSelectedArticle(null);
         }}
         lang={preferences.language}
+        onOpenAdPortal={handleOpenAdPortal}
+        adSenseConfig={adMonetization?.config}
+        campaigns={adMonetization?.campaigns}
       />
 
       {/* User Preferences & Push Alerts Modal */}
@@ -736,6 +827,18 @@ export default function App() {
         onClose={() => setIsSubscriptionOpen(false)}
         preferences={preferences}
         onSubscribe={handleSubscribe}
+      />
+
+      {/* Advertising & Monetization Portal (Google AdSense & Direct Ads) */}
+      <AdvertisingModal
+        isOpen={isAdPortalOpen}
+        onClose={() => setIsAdPortalOpen(false)}
+        rateCard={adMonetization?.rateCard || []}
+        campaigns={adMonetization?.campaigns || []}
+        adSenseConfig={adMonetization?.config}
+        initialPlacement={selectedAdPlacement}
+        onCampaignCreated={handleCampaignCreated}
+        onConfigUpdated={handleConfigUpdated}
       />
 
       {/* Floating Push Alert Toast */}

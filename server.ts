@@ -209,7 +209,147 @@ async function startServer() {
     });
   });
 
-  // 9. System Status & Health
+  // 9. Advertising & Monetization API (Google AdSense & Direct-Sold Ads)
+  app.get('/api/ads', (req, res) => {
+    try {
+      const placement = req.query.placement as any;
+      const state = dataStore.getAdState();
+      const activeForPlacement = placement ? dataStore.getActiveCampaigns(placement) : state.campaigns;
+
+      res.json({
+        success: true,
+        data: {
+          ...state,
+          activeForPlacement,
+        },
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.get('/api/ads/rate-card', (req, res) => {
+    try {
+      res.json({
+        success: true,
+        data: dataStore.getRateCard(),
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post('/api/ads/campaigns', (req, res) => {
+    try {
+      const {
+        advertiserName,
+        businessCategory,
+        contactEmail,
+        contactPhone,
+        rncTaxId,
+        adTitle,
+        adSubtitle,
+        targetUrl,
+        imageUrl,
+        callToAction,
+        placement,
+        days,
+        paymentMethod,
+      } = req.body;
+
+      if (!advertiserName || !contactEmail || !adTitle || !targetUrl || !placement) {
+        res.status(400).json({
+          success: false,
+          error: 'Campos requeridos: Nombre del anunciante, correo, título del anuncio, URL de destino y espacio publicitario.',
+        });
+        return;
+      }
+
+      const rateCard = dataStore.getRateCard();
+      const selectedPlan = rateCard.find(p => p.placement === placement) || rateCard[0];
+      const durationDays = Number(days) || 7;
+
+      // Volume discount: 15% discount for 15+ days, 25% discount for 30+ days
+      const discount = durationDays >= 30 ? 0.75 : durationDays >= 15 ? 0.85 : 1.0;
+      const totalPriceDOP = Math.round(selectedPlan.pricePerDayDOP * durationDays * discount);
+      const totalPriceUSD = Math.round(selectedPlan.pricePerDayUSD * durationDays * discount);
+
+      const startDate = new Date().toISOString();
+      const endDate = new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+      const campaign = dataStore.addCampaign({
+        advertiserName,
+        businessCategory: businessCategory || 'Comercio General',
+        contactEmail,
+        contactPhone: contactPhone || '',
+        rncTaxId: rncTaxId || '',
+        adTitle,
+        adSubtitle: adSubtitle || '',
+        targetUrl,
+        imageUrl: imageUrl || 'https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=1200&q=80',
+        callToAction: callToAction || 'Más Información',
+        placement,
+        startDate,
+        endDate,
+        days: durationDays,
+        totalPriceDOP,
+        totalPriceUSD,
+        paymentMethod: paymentMethod || 'banco_popular',
+        paymentStatus: 'paid', // Immediately authorized for live preview
+        status: 'active',
+      });
+
+      res.status(201).json({
+        success: true,
+        data: campaign,
+        message: `¡Campaña para "${advertiserName}" pautada con éxito! Su anuncio ya se encuentra en rotación activa en "${selectedPlan.name}".`,
+      });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  app.post('/api/ads/click/:id', (req, res) => {
+    const success = dataStore.recordAdClick(req.params.id);
+    res.json({ success });
+  });
+
+  app.post('/api/ads/impression/:id', (req, res) => {
+    const success = dataStore.recordAdImpression(req.params.id);
+    res.json({ success });
+  });
+
+  app.post('/api/ads/campaigns/:id/toggle', (req, res) => {
+    const updated = dataStore.toggleCampaignStatus(req.params.id);
+    if (!updated) {
+      res.status(404).json({ success: false, error: 'Campaña no encontrada' });
+      return;
+    }
+    res.json({ success: true, data: updated });
+  });
+
+  app.post('/api/ads/config', (req, res) => {
+    try {
+      const updated = dataStore.updateAdSenseConfig(req.body);
+      res.json({ success: true, data: updated });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // Standard ads.txt verification endpoint for Google AdSense crawler
+  app.get('/ads.txt', (req, res) => {
+    const config = dataStore.getAdSenseConfig();
+    const cleanPubId = config.publisherId.replace(/^ca-/, '');
+    res.type('text/plain');
+    res.send(
+      `# ads.txt file for ELINOTICIA\n` +
+      `# Google AdSense Partner Verification\n` +
+      `google.com, ${cleanPubId || 'pub-9842510294719283'}, DIRECT, f08c47fec0942fa0\n`
+    );
+  });
+
+  // 10. System Status & Health
   const handleSystemStatus = (req: express.Request, res: express.Response) => {
     const state = dataStore.getState();
     res.json({
