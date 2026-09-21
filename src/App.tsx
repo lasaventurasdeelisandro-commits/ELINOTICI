@@ -3,6 +3,8 @@ import {
   NewsArticle, RssFeedSource, PodcastEpisode, UserPreferences, 
   NewsCategory, SupportedLanguage 
 } from './types';
+import { INITIAL_ARTICLES, INITIAL_FEEDS, INITIAL_PODCASTS } from './data/initialData';
+import { executeClientRssSync } from './services/clientRssSync';
 import { Header } from './components/Header';
 import { CurrencyExchangeBar } from './components/CurrencyExchangeBar';
 import { BreakingNewsTicker } from './components/BreakingNewsTicker';
@@ -37,17 +39,47 @@ const DEFAULT_PREFERENCES: UserPreferences = {
 };
 
 export default function App() {
-  // State
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [feeds, setFeeds] = useState<RssFeedSource[]>([]);
-  const [podcasts, setPodcasts] = useState<PodcastEpisode[]>([]);
+  // State with immediate offline & GitHub Pages hydration
+  const [articles, setArticles] = useState<NewsArticle[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('elinoticia_cached_articles');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return INITIAL_ARTICLES;
+  });
+
+  const [feeds, setFeeds] = useState<RssFeedSource[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('elinoticia_cached_feeds');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch (e) {}
+    }
+    return INITIAL_FEEDS;
+  });
+
+  const [podcasts, setPodcasts] = useState<PodcastEpisode[]>(INITIAL_PODCASTS);
   const [stats, setStats] = useState({
     totalProcessed: 28,
     verifiedPublished: 16,
     spamFiltered: 8,
     duplicatesMerged: 4,
   });
-  const [lastSyncTime, setLastSyncTime] = useState<string>(new Date().toISOString());
+  const [lastSyncTime, setLastSyncTime] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('elinoticia_last_sync_time');
+      if (saved) return saved;
+    }
+    return new Date().toISOString();
+  });
   const [nextScheduledSync, setNextScheduledSync] = useState<string>(
     new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString()
   );
@@ -55,7 +87,8 @@ export default function App() {
   const [lastSyncNewArticlesCount, setLastSyncNewArticlesCount] = useState<number>(0);
   const [syncHistory, setSyncHistory] = useState<any[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isServerMode, setIsServerMode] = useState<boolean | null>(null);
 
   // User Navigation & Filters
   const [currentCategory, setCurrentCategory] = useState<NewsCategory | 'portada'>('portada');
@@ -128,79 +161,100 @@ export default function App() {
     }
   };
 
-  // Fetch initial data
+  // Fetch data with full-stack API and static GitHub Pages resilience
   const loadData = useCallback(async (isSilent = false) => {
-    if (!isSilent) setIsLoading(true);
+    if (!isSilent && articles.length === 0) setIsLoading(true);
     try {
       const [newsRes, feedsRes, podcastsRes, statsRes] = await Promise.all([
-        fetch('/api/news'),
-        fetch('/api/feeds'),
-        fetch('/api/podcasts'),
-        fetch('/api/stats'),
+        fetch('/api/news').catch(() => null),
+        fetch('/api/feeds').catch(() => null),
+        fetch('/api/podcasts').catch(() => null),
+        fetch('/api/stats').catch(() => null),
       ]);
 
-      const newsData = await newsRes.json();
-      const feedsData = await feedsRes.json();
-      const podcastsData = await podcastsRes.json();
-      const statsData = await statsRes.json();
+      if (newsRes && newsRes.ok) {
+        setIsServerMode(true);
+        const newsData = await newsRes.json();
+        if (newsData.success && Array.isArray(newsData.data) && newsData.data.length > 0) {
+          setArticles(newsData.data);
+          try {
+            localStorage.setItem('elinoticia_cached_articles', JSON.stringify(newsData.data));
+          } catch (e) {}
 
-      if (newsData.success && Array.isArray(newsData.data)) {
-        setArticles(newsData.data);
-
-        // Check for new breaking alerts
-        setSeenArticleIds((prevSeen) => {
-          if (prevSeen.size > 0) {
-            const newlyArrived = newsData.data.find(
-              (a: NewsArticle) =>
-                !prevSeen.has(a.id) &&
-                (a.isBreaking || a.aiVerification.credibilityScore >= 97) &&
-                preferences.alertCategories.includes(a.category)
-            );
-            if (newlyArrived) {
-              setActivePushToast(newlyArrived);
-              playAlertChime();
-              // Browser push if permitted
-              if (
-                typeof window !== 'undefined' &&
-                'Notification' in window &&
-                Notification.permission === 'granted'
-              ) {
-                new Notification(`🚨 Alerta: ${newlyArrived.title}`, {
-                  body: newlyArrived.excerpt,
-                  icon: newlyArrived.imageUrl,
-                });
+          // Check for new breaking alerts
+          setSeenArticleIds((prevSeen) => {
+            if (prevSeen.size > 0) {
+              const newlyArrived = newsData.data.find(
+                (a: NewsArticle) =>
+                  !prevSeen.has(a.id) &&
+                  (a.isBreaking || a.aiVerification.credibilityScore >= 97) &&
+                  preferences.alertCategories.includes(a.category)
+              );
+              if (newlyArrived) {
+                setActivePushToast(newlyArrived);
+                playAlertChime();
+                if (
+                  typeof window !== 'undefined' &&
+                  'Notification' in window &&
+                  Notification.permission === 'granted'
+                ) {
+                  new Notification(`🚨 Alerta: ${newlyArrived.title}`, {
+                    body: newlyArrived.excerpt,
+                    icon: newlyArrived.imageUrl,
+                  });
+                }
               }
             }
-          }
-          return new Set(newsData.data.map((a: NewsArticle) => a.id));
-        });
+            return new Set(newsData.data.map((a: NewsArticle) => a.id));
+          });
+        }
+      } else {
+        // Backend not available (e.g. running on static GitHub Pages)
+        setIsServerMode(false);
       }
 
-      if (feedsData.success) {
-        setFeeds(feedsData.data);
-        if (feedsData.syncIntervalHours) setSyncIntervalHours(feedsData.syncIntervalHours);
-        if (feedsData.lastSyncNewArticlesCount !== undefined) setLastSyncNewArticlesCount(feedsData.lastSyncNewArticlesCount);
-        if (feedsData.syncHistory) setSyncHistory(feedsData.syncHistory);
+      if (feedsRes && feedsRes.ok) {
+        const feedsData = await feedsRes.json();
+        if (feedsData.success && Array.isArray(feedsData.data)) {
+          setFeeds(feedsData.data);
+          try {
+            localStorage.setItem('elinoticia_cached_feeds', JSON.stringify(feedsData.data));
+          } catch (e) {}
+          if (feedsData.syncIntervalHours) setSyncIntervalHours(feedsData.syncIntervalHours);
+          if (feedsData.lastSyncNewArticlesCount !== undefined) setLastSyncNewArticlesCount(feedsData.lastSyncNewArticlesCount);
+          if (feedsData.syncHistory) setSyncHistory(feedsData.syncHistory);
+        }
       }
-      if (podcastsData.success) setPodcasts(podcastsData.data);
-      if (statsData.success) {
-        const s = statsData.data?.stats || statsData.stats;
-        if (s) setStats(s);
-        const lst = statsData.data?.lastSyncTime || statsData.lastSyncTime;
-        if (lst) setLastSyncTime(lst);
-        const nss = statsData.data?.nextScheduledSync || statsData.nextScheduledSync;
-        if (nss) setNextScheduledSync(nss);
-        const sih = statsData.data?.syncIntervalHours || statsData.syncIntervalHours;
-        if (sih) setSyncIntervalHours(sih);
-        const history = statsData.data?.syncHistory || statsData.syncHistory;
-        if (history) setSyncHistory(history);
+
+      if (podcastsRes && podcastsRes.ok) {
+        const podcastsData = await podcastsRes.json();
+        if (podcastsData.success && Array.isArray(podcastsData.data)) {
+          setPodcasts(podcastsData.data);
+        }
+      }
+
+      if (statsRes && statsRes.ok) {
+        const statsData = await statsRes.json();
+        if (statsData.success) {
+          const s = statsData.data?.stats || statsData.stats;
+          if (s) setStats(s);
+          const lst = statsData.data?.lastSyncTime || statsData.lastSyncTime;
+          if (lst) setLastSyncTime(lst);
+          const nss = statsData.data?.nextScheduledSync || statsData.nextScheduledSync;
+          if (nss) setNextScheduledSync(nss);
+          const sih = statsData.data?.syncIntervalHours || statsData.syncIntervalHours;
+          if (sih) setSyncIntervalHours(sih);
+          const history = statsData.data?.syncHistory || statsData.syncHistory;
+          if (history) setSyncHistory(history);
+        }
       }
     } catch (err) {
-      console.error('Error fetching newspaper data:', err);
+      console.warn('Operating in static/browser resilience mode:', err);
+      setIsServerMode(false);
     } finally {
       if (!isSilent) setIsLoading(false);
     }
-  }, [preferences.alertCategories]);
+  }, [preferences.alertCategories, articles.length]);
 
   useEffect(() => {
     loadData();
@@ -220,14 +274,37 @@ export default function App() {
     return () => clearInterval(interval);
   }, [loadData]);
 
-  // Trigger manual RSS sync
+  // Trigger manual RSS sync (server-side with browser fallback for GitHub Pages)
   const handleTriggerSync = async () => {
     setIsSyncing(true);
     try {
-      const res = await fetch('/api/news/refresh', { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        await loadData(true);
+      let serverSuccess = false;
+      try {
+        const res = await fetch('/api/news/refresh', { method: 'POST' });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.success) {
+            serverSuccess = true;
+            await loadData(true);
+          }
+        }
+      } catch (e) {
+        // Fullstack server not available (e.g. GitHub Pages)
+      }
+
+      // If on GitHub Pages or static host, execute direct browser RSS sync
+      if (!serverSuccess) {
+        const clientResult = await executeClientRssSync(articles, feeds);
+        setArticles(clientResult.articles);
+        setLastSyncNewArticlesCount(clientResult.newArticlesCount);
+        const nowIso = new Date().toISOString();
+        setLastSyncTime(nowIso);
+        setNextScheduledSync(new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString());
+        setStats((prev) => ({
+          ...prev,
+          totalProcessed: prev.totalProcessed + (clientResult.newArticlesCount || 1),
+          verifiedPublished: clientResult.articles.length,
+        }));
       }
     } catch (err) {
       console.error('Failed to refresh feeds:', err);
@@ -236,42 +313,84 @@ export default function App() {
     }
   };
 
-  // Toggle feed enabled/disabled
+  // Toggle feed enabled/disabled (supports both backend and localStorage)
   const handleToggleFeed = async (id: string) => {
+    setFeeds((prev) => {
+      const updated = prev.map((f) => (f.id === id ? { ...f, enabled: !f.enabled } : f));
+      try {
+        localStorage.setItem('elinoticia_cached_feeds', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
     try {
       const res = await fetch(`/api/feeds/${id}/toggle`, { method: 'POST' });
-      const data = await res.json();
-      if (data.success) {
-        setFeeds(data.data);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setFeeds(data.data);
       }
     } catch (err) {
-      console.error(err);
+      // Handled locally
     }
   };
 
-  // Delete feed
+  // Delete feed (supports both backend and localStorage)
   const handleDeleteFeed = async (id: string) => {
+    setFeeds((prev) => {
+      const updated = prev.filter((f) => f.id !== id);
+      try {
+        localStorage.setItem('elinoticia_cached_feeds', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+
     try {
       const res = await fetch(`/api/feeds/${id}`, { method: 'DELETE' });
-      const data = await res.json();
-      if (data.success) {
-        setFeeds(data.data);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setFeeds(data.data);
       }
     } catch (err) {
-      console.error(err);
+      // Handled locally
     }
   };
 
-  // Add custom feed
+  // Add custom feed (supports both backend and localStorage)
   const handleAddFeed = async (newFeed: { name: string; url: string; category: any; country: 'DO' | 'GLOBAL' }) => {
-    const res = await fetch('/api/feeds', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(newFeed),
+    const customId = `custom-feed-${Date.now()}`;
+    const fullFeed: RssFeedSource = {
+      id: customId,
+      name: newFeed.name,
+      url: newFeed.url,
+      category: newFeed.category,
+      country: newFeed.country,
+      enabled: true,
+      lastFetched: null,
+      status: 'healthy',
+      itemCount: 0,
+      reliability: 'trusted',
+    };
+
+    setFeeds((prev) => {
+      const updated = [fullFeed, ...prev];
+      try {
+        localStorage.setItem('elinoticia_cached_feeds', JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
     });
-    const data = await res.json();
-    if (data.success) {
-      setFeeds(data.data);
+
+    try {
+      const res = await fetch('/api/feeds', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newFeed),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) setFeeds(data.data);
+      }
+    } catch (err) {
+      // Handled locally
     }
   };
 

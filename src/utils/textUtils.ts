@@ -1,6 +1,6 @@
 /**
- * Comprehensive text utilities for El Faro Quisqueya
- * Handles HTML entity decoding, sanitization, and summary formatting.
+ * Shared text sanitization and HTML entity decoder for ELINOTICIA.
+ * Safe for both browser client and Node.js server.
  */
 
 const NAMED_ENTITIES: Record<string, string> = {
@@ -105,37 +105,70 @@ export function decodeHtmlEntities(input: string): string {
 }
 
 /**
- * Ensures any summary item (string, object, or nested) is converted to a clean, readable string
- * and never outputs "[object Object]".
+ * Safely extracts raw text from unknown XML/JSON parsed structures (strings, nested objects, CDATA, etc.)
+ * Prevents any "[object Object]" from ever entering the system.
  */
-export function formatSummaryPoint(point: any): string {
-  if (!point) return '';
-  let str = '';
-
-  if (typeof point === 'string') {
-    str = point;
-  } else if (typeof point === 'object') {
-    // If it's an object with keys like text, point, summary, value
-    str = point.text || point.point || point.summary || point.value || point['#text'] || '';
-    if (!str) {
-      const vals = Object.values(point).filter(v => typeof v === 'string');
-      str = vals.join(' ');
-    }
-  } else {
-    str = String(point);
+export function extractRawText(val: any): string {
+  if (!val) return '';
+  if (typeof val === 'string') return val;
+  if (typeof val === 'number') return String(val);
+  if (Array.isArray(val)) {
+    return val.map(extractRawText).join(' ');
   }
-
-  str = str.replace(/\[object\s+Object\]/gi, '').trim();
-  str = decodeHtmlEntities(str);
-  return str;
+  if (typeof val === 'object') {
+    if (val['#text']) return extractRawText(val['#text']);
+    if (val['_']) return extractRawText(val['_']);
+    const pieces: string[] = [];
+    for (const key of Object.keys(val)) {
+      if (!key.startsWith('@_')) {
+        pieces.push(extractRawText(val[key]));
+      }
+    }
+    if (pieces.length > 0) {
+      return pieces.join(' ');
+    }
+  }
+  return '';
 }
 
 /**
- * Cleans an entire summary array, removing invalid entries or objects.
+ * Strips HTML tags, removes scripts/styles, strips "[object Object]", and decodes all HTML entities.
  */
-export function cleanSummaryArray(summary: any[] | undefined | null): string[] {
-  if (!Array.isArray(summary)) return [];
-  return summary
-    .map(formatSummaryPoint)
-    .filter(s => s && s.length > 5);
+export function cleanJournalisticText(raw: any): string {
+  const extracted = extractRawText(raw);
+  if (!extracted) return '';
+
+  const stripped = extracted
+    .replace(/<script[^>]*>([\S\s]*?)<\/script>/gim, '')
+    .replace(/<style[^>]*>([\S\s]*?)<\/style>/gim, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\[object\s+Object\]/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  return decodeHtmlEntities(stripped);
+}
+
+/**
+ * Formats a single bullet point item, ensuring objects or entities become clean strings.
+ */
+export function formatSummaryPoint(val: any): string {
+  if (!val) return '';
+  if (typeof val === 'string') {
+    return cleanJournalisticText(val);
+  }
+  if (typeof val === 'object') {
+    return cleanJournalisticText(extractRawText(val));
+  }
+  return cleanJournalisticText(String(val));
+}
+
+/**
+ * Cleans an array of summary items, eliminating [object Object] and empty entries.
+ */
+export function cleanSummaryArray(rawArr: any): string[] {
+  if (!Array.isArray(rawArr)) return [];
+  return rawArr
+    .map((item) => formatSummaryPoint(item))
+    .filter((s: string) => s && s !== '[object Object]' && s.trim().length > 0);
 }

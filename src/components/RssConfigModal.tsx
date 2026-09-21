@@ -208,6 +208,14 @@ export const RssConfigModal: React.FC<RssConfigModalProps> = ({
                 </span>
               </div>
             </div>
+
+            {/* GitHub Pages vs Full-Stack Explanation Banner */}
+            <div className="p-2.5 rounded-lg bg-stone-100/90 dark:bg-stone-800/90 border border-stone-200 dark:border-stone-700 text-[11px] text-stone-600 dark:text-stone-300 leading-relaxed">
+              <span className="font-bold text-stone-800 dark:text-stone-100 block mb-0.5">
+                💡 Soporte Híbrido (GitHub Pages y Servidores Cloud):
+              </span>
+              En GitHub Pages (alojamiento estático), no existe un proceso Node.js en servidor para tareas cron de fondo. ELINOTICIA incluye ahora un motor de sincronización directa en el navegador vía proxy y almacenamiento local persistente: el periódico ya nunca quedará vacío y cargará todas sus crónicas instantáneamente.
+            </div>
           </div>
 
           {syncMessage && (

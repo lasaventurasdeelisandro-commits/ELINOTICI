@@ -279,7 +279,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
             </div>
 
             <ul className="space-y-2 text-sm text-stone-800 dark:text-stone-200 font-reading">
-              {summary.map((point, idx) => (
+              {summary.map((point: any, idx: number) => (
                 <li key={idx} className="flex items-start gap-2">
                   <span className="text-amber-600 font-bold text-base leading-none mt-1">✓</span>
                   <span>{formatSummaryPoint(point)}</span>
