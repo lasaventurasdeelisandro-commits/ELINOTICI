@@ -577,6 +577,132 @@ Con una reducción de hasta 35% en el consumo energético respecto a las generac
     isBreaking: false,
     readTimeMinutes: 5,
     socialShares: { whatsapp: 510, twitter: 670, facebook: 340, linkedin: 450 }
+  },
+  {
+    id: 'art-11',
+    title: 'UEFA Champions League: Real Madrid, Manchester City y Bayern Múnich se imponen con solvencia en la fase eliminatoria',
+    excerpt: 'Jornada vibrante en el fútbol europeo con golazos de Vinicius Jr., Erling Haaland y Harry Kane que definen los primeros puestos de la tabla continental.',
+    content: `La máxima competición de clubes del planeta ofreció otra noche inolvidable de fútbol en los estadios del Viejo Continente. En el Santiago Bernabéu, el Real Madrid superó con autoridad a su rival gracias a un doblete de Vinicius Jr. y una asistencia magistral de Jude Bellingham.
+
+En Manchester, los 'Cityzens' de Pep Guardiola mantuvieron su invicto europeo con una exhibición ofensiva liderada por Erling Haaland. Por su parte, el Bayern Múnich se afianzó en los puestos de privilegio con solvencia defensiva. El torneo entra en su fase más decisiva ante la mirada de millones de fanáticos en todo el mundo y República Dominicana.`,
+    summary: [
+      'El Real Madrid y Manchester City consolidan el liderato en sus respectivos grupos con puntuación óptima.',
+      'Vinicius Jr. y Erling Haaland encabezan la tabla de goleadores de la presente edición de la Champions League.',
+      'La UEFA confirma récord de audiencia global en transmisiones digitales y señales satelitales.'
+    ],
+    aiVerification: {
+      isVerified: true,
+      credibilityScore: 99,
+      sourceRating: 'Fuente Oficial',
+      verificationDetails: 'Estadísticas oficiales de la UEFA y actas de partido validadas por las federaciones europeas.',
+      antiSpamChecked: true,
+      duplicateChecked: true,
+      keyFactsVerified: [
+        'Marcadores y actas oficiales de los encuentros de Champions League.',
+        'Estadísticas de posesión, goles y amonestaciones de la UEFA.'
+      ]
+    },
+    tags: ['#ChampionsLeague', '#RealMadrid', '#ManchesterCity', '#FutbolMundial', '#UEFA'],
+    category: 'deportes',
+    subcategory: 'Fútbol Europeo & Champions',
+    source: {
+      name: 'UEFA Champions / ESPN Deportes',
+      url: 'https://espn.com/futbol',
+      domain: 'espn.com',
+      feedId: 'feed-gnews-deportes-global'
+    },
+    author: 'Mateo Fernández / Corresponsal en Madrid',
+    publishedAt: '2026-09-21T02:15:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
+    imageCaption: 'Acción y emoción en los céspedes de la UEFA Champions League.',
+    isDominican: false,
+    isBreaking: false,
+    readTimeMinutes: 4,
+    socialShares: { whatsapp: 920, twitter: 840, facebook: 1200, linkedin: 35 }
+  },
+  {
+    id: 'art-12',
+    title: 'NBA al rojo vivo: Boston Celtics y Los Angeles Lakers aceleran el ritmo rumbo a los Playoffs 2026',
+    excerpt: 'Duelos intensos en la Conferencia Este y Oeste definen el cuadro clasificatorio con destacadas actuaciones de las superestrellas de la liga.',
+    content: `La temporada regular de la National Basketball Association (NBA) entra en su tramo culminante con una carrera frenética por los puestos de postemporada. Los Boston Celtics demostraron su poderío colectivo con una ráfaga de triples en los minutos finales para sellar su triunfo número 45 de la campaña.
+
+En el Oeste, Los Angeles Lakers mantuvieron su impulso victorioso apoyados en la consistencia de su ofensiva de media distancia y un férreo cerrojo defensivo en la pintura. Los fanáticos dominicanos del baloncesto siguen con entusiasmo el desempeño de los jugadores de raíces caribeñas que brillan en la duela estadounidense.`,
+    summary: [
+      'Boston Celtics consolida el mejor porcentaje de victorias en la Conferencia Este.',
+      'Los Angeles Lakers encadenan cuatro triunfos consecutivos afianzando su boleto a postemporada.',
+      'El rating de la NBA en la región del Caribe y Latinoamérica registra crecimiento de doble dígito.'
+    ],
+    aiVerification: {
+      isVerified: true,
+      credibilityScore: 98,
+      sourceRating: 'Medio Verificado',
+      verificationDetails: 'Reporte validado con los registros oficiales de anotación y tableros de la NBA.',
+      antiSpamChecked: true,
+      duplicateChecked: true,
+      keyFactsVerified: [
+        'Box scores oficiales de la NBA.',
+        'Tabla de posiciones y margen de juegos de diferencia.'
+      ]
+    },
+    tags: ['#NBA', '#Baloncesto', '#BostonCeltics', '#Lakers', '#Playoffs'],
+    category: 'deportes',
+    subcategory: 'Baloncesto NBA',
+    source: {
+      name: 'NBA Official / ClutchPoints',
+      url: 'https://nba.com',
+      domain: 'nba.com',
+      feedId: 'feed-gnews-deportes-global'
+    },
+    author: 'Marcos Aurelio Santos / Corresponsal NBA',
+    publishedAt: '2026-09-21T01:45:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
+    imageCaption: 'Intensidad en la duela en la recta final de la temporada regular de la NBA.',
+    isDominican: false,
+    isBreaking: false,
+    readTimeMinutes: 3,
+    socialShares: { whatsapp: 640, twitter: 590, facebook: 710, linkedin: 18 }
+  },
+  {
+    id: 'art-13',
+    title: 'Clásico Mundial de Béisbol: República Dominicana define lista preliminar con rotación de lujo y poder estelar',
+    excerpt: 'La Federación Dominicana de Béisbol (FEDOBE) y la gerencia general perfilan el roster que buscará la corona mundial con las máximas luminarias de MLB.',
+    content: `La gerencia de la Selección Dominicana de Béisbol dio a conocer importantes avances en la estructuración de la nómina para el próximo Clásico Mundial de Béisbol. Con lanzadores abridores consagrados en el béisbol de las Mayores y una alineación cargada de bateadores con capacidad de cuadrangular, el equipo quisqueyano se perfila como el gran favorito del torneo.
+
+"El compromiso de nuestros peloteros con la bandera dominicana es total. Todos han expresado su orgullo de vestir la camiseta tricolor", destacó el comité técnico durante rueda de prensa celebrada en el Centro Olímpico Juan Pablo Duarte de Santo Domingo.`,
+    summary: [
+      'FEDOBE avanza en la conformación del cuerpo de pitcheo abridor y relevo corto para el Clásico.',
+      'Peloteros de la talla de Juan Soto, Rafael Devers y Fernando Tatis Jr. confirman su disposición patriótica.',
+      'El campamento de preparación iniciará en Florida con partidos de exhibición.'
+    ],
+    aiVerification: {
+      isVerified: true,
+      credibilityScore: 99,
+      sourceRating: 'Fuente Oficial',
+      verificationDetails: 'Conferencia de prensa oficial de la Federación Dominicana de Béisbol (FEDOBE) y LIDOM.',
+      antiSpamChecked: true,
+      duplicateChecked: true,
+      keyFactsVerified: [
+        'Comunicado de prensa oficial de FEDOBE.',
+        'Listado preliminar registrado ante Major League Baseball (WBC).'
+      ]
+    },
+    tags: ['#ClasicoMundial', '#PlatanoPower', '#FEDOBE', '#BeisbolDominicano', '#LIDOM'],
+    category: 'deportes',
+    subcategory: 'Selección Dominicana & Clásico',
+    source: {
+      name: 'FEDOBE / Prensa Deportiva RD',
+      url: 'https://fedobe.org',
+      domain: 'fedobe.org',
+      feedId: 'feed-gnews-lidom'
+    },
+    author: 'Yenier Ramírez Peña / Santo Domingo',
+    publishedAt: '2026-09-21T03:30:00Z',
+    imageUrl: 'https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=1200&q=80',
+    imageCaption: 'Orgullo nacional y pasión por el béisbol en la República Dominicana.',
+    isDominican: true,
+    isBreaking: true,
+    readTimeMinutes: 4,
+    socialShares: { whatsapp: 1540, twitter: 1120, facebook: 2100, linkedin: 45 }
   }
 ];
 
@@ -598,7 +724,114 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
       'Proyección de crecimiento del PIB de 5.1% según el Banco Central.',
       'Récord histórico de inversión turística en el polo suroeste.',
       'Perspectivas de inflación y estabilidad cambiaria para el próximo trimestre.'
-    ]
+    ],
+    hasVideoStream: true,
+    streamData: {
+      channelName: 'ELINOTICIA TV • Canal 24 Digital',
+      isLive: true,
+      viewerCount: 2840,
+      currentSegment: 'Bloque Económico: Debate de Perspectivas Financieras 2026',
+      programSchedule: 'Lunes a Viernes • 7:00 AM - 10:00 AM AST',
+      streamResolution: '1080p HD • 60 FPS',
+      cameras: [
+        {
+          id: 'cam-1',
+          name: 'Cámara 1: Cabina Master General',
+          label: 'CAM 1 • Master',
+          cameraType: 'main',
+          previewImageUrl: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80',
+          description: 'Vista panorámica de la cabina de radiodifusión, micrófonos Shure y mesa de producción.',
+          viewAngle: 'Gran angular 24mm (Plano general de cabina)'
+        },
+        {
+          id: 'cam-2',
+          name: 'Cámara 2: Mesa de Comentaristas',
+          label: 'CAM 2 • Comentaristas',
+          cameraType: 'commentators',
+          previewImageUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80',
+          description: 'Primer plano directo a los presentadores Carmen Lidia Santos y Lic. Mariano de la Cruz.',
+          viewAngle: 'Enfoque medio 50mm f/1.8 (Mesa de análisis)'
+        },
+        {
+          id: 'cam-3',
+          name: 'Cámara 3: Set de Invitados Especiales',
+          label: 'CAM 3 • Invitados',
+          cameraType: 'guests',
+          previewImageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1200&q=80',
+          description: 'Enfoque dedicado al panel de invitados y entrevistados en directo.',
+          viewAngle: 'Plano corto 85mm (Panel de personalidades)'
+        },
+        {
+          id: 'cam-4',
+          name: 'Cámara 4: Pantalla Dividida (Dúo Debate)',
+          label: 'CAM 4 • Split Screen',
+          cameraType: 'split',
+          previewImageUrl: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80',
+          description: 'Señal combinada en vivo: Comentarista en cabina e invitado en enlace con zócalo interactivo.',
+          viewAngle: 'Mezclador de producción de televisión'
+        }
+      ],
+      commentators: [
+        {
+          id: 'comm-1',
+          name: 'Carmen Lidia Santos',
+          role: 'Directora de Contenidos & Analista de Coyuntura',
+          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+          isSpeaking: true,
+          notes: 'Conduce el bloque económico sobre divisas y reservas internacionales.',
+          cameraRef: 'cam-2'
+        },
+        {
+          id: 'comm-2',
+          name: 'Lic. Mariano de la Cruz',
+          role: 'Abogado Constitucionalista y Comentarista Político',
+          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80',
+          isSpeaking: false,
+          notes: 'Analiza el impacto legislativo de las nuevas reformas aduaneras y tributarias.',
+          cameraRef: 'cam-2'
+        },
+        {
+          id: 'comm-3',
+          name: 'Lic. Yenier Ramírez',
+          role: 'Mesa de Datos & Reacciones Ciudadanas',
+          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
+          isSpeaking: false,
+          notes: 'Monitorea comentarios de WhatsApp y redes sociales de los oyentes.',
+          cameraRef: 'cam-1'
+        }
+      ],
+      guests: [
+        {
+          id: 'guest-1',
+          name: 'Ing. Roberto Herrera',
+          title: 'Consultor Económico & Exdirectivo del Conep',
+          organization: 'Cámara de Comercio y Producción',
+          avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=400&q=80',
+          topic: 'Inversión privada en el polo turístico de Pedernales y equilibrio fiscal',
+          connectionType: 'Presencial en Cabina',
+          isSpeaking: true,
+          cameraRef: 'cam-3'
+        },
+        {
+          id: 'guest-2',
+          name: 'Licda. Altagracia Salazar',
+          title: 'Analista de Políticas Públicas y Transparencia',
+          organization: 'Foro Ciudadano Dominicano',
+          avatarUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
+          topic: 'Supervisión del gasto social y modernización institucional del Estado',
+          connectionType: 'Enlace Satelital 4K',
+          isSpeaking: false,
+          cameraRef: 'cam-3'
+        }
+      ],
+      tickerNews: [
+        'BANCO CENTRAL: Economía dominicana se proyecta líder del Caribe con 5.1% de crecimiento.',
+        'TURISMO RD: Aeropuertos de Punta Cana y Santiago registran nuevo récord histórico de pasajeros.',
+        'TASA DE CAMBIO: Dólar cotiza a RD$59.90 compra / RD$60.15 venta en ventanilla bancaria.',
+        'REFORMA FISCAL: Mesa de diálogo convoca a sectores empresariales, laborales y académicos.',
+        'EN VIVO: Envía tus preguntas por WhatsApp al (809) 555-ELINOTICIA para Carmen Lidia y panelistas.'
+      ]
+    }
   },
   {
     id: 'pod-2',

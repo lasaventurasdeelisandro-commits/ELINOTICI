@@ -32,7 +32,7 @@ async function startServer() {
         search: search as string,
         tag: tag as string,
         country: country as any,
-        limit: limit ? parseInt(limit as string, 10) : 50,
+        limit: limit ? parseInt(limit as string, 10) : 250,
         offset: offset ? parseInt(offset as string, 10) : 0,
       });
 

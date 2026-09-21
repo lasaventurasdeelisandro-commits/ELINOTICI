@@ -136,7 +136,7 @@ class DataStore {
 
     const total = list.length;
     const offset = params?.offset || 0;
-    const limit = params?.limit || 50;
+    const limit = params?.limit !== undefined ? params.limit : 250;
 
     return {
       items: list.slice(offset, offset + limit),

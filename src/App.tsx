@@ -166,7 +166,7 @@ export default function App() {
     if (!isSilent && articles.length === 0) setIsLoading(true);
     try {
       const [newsRes, feedsRes, podcastsRes, statsRes] = await Promise.all([
-        fetch('/api/news').catch(() => null),
+        fetch('/api/news?limit=250').catch(() => null),
         fetch('/api/feeds').catch(() => null),
         fetch('/api/podcasts').catch(() => null),
         fetch('/api/stats').catch(() => null),
@@ -470,6 +470,7 @@ export default function App() {
         onSelectCategory={(cat) => {
           setCurrentCategory(cat);
           setSelectedTag(null);
+          setSearchQuery('');
         }}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -553,6 +554,26 @@ export default function App() {
               Analizando credibilidad, descartando spam y generando resúmenes en tiempo real.
             </p>
           </div>
+        ) : currentCategory === 'deportes' ? (
+          <SportsSection
+            articles={articles}
+            onSelect={(art) => setSelectedArticle(art)}
+          />
+        ) : currentCategory === 'economia' ? (
+          <EconomySection
+            articles={articles}
+            onSelect={(art) => setSelectedArticle(art)}
+          />
+        ) : currentCategory === 'tecnologia' ? (
+          <TechSection
+            articles={articles}
+            onSelect={(art) => setSelectedArticle(art)}
+          />
+        ) : currentCategory === 'opinion' ? (
+          <OpinionSection
+            articles={articles}
+            onSelect={(art) => setSelectedArticle(art)}
+          />
         ) : filteredArticles.length === 0 ? (
           <div className="py-16 text-center space-y-3 bg-white dark:bg-stone-900 rounded-2xl border border-stone-200 dark:border-stone-800 p-8">
             <AlertCircle className="w-10 h-10 text-amber-600 mx-auto" />
@@ -573,35 +594,7 @@ export default function App() {
           </div>
         ) : (
           <>
-            {/* PORTADA VIEW OR STANDARD CATEGORY VIEW */}
-
-            {/* If Category is SPECIFIC: DEPORTES */}
-            {currentCategory === 'deportes' ? (
-              <SportsSection
-                articles={articles}
-                onSelect={(art) => setSelectedArticle(art)}
-              />
-            ) : currentCategory === 'economia' ? (
-              /* If Category is ECONOMIA */
-              <EconomySection
-                articles={articles}
-                onSelect={(art) => setSelectedArticle(art)}
-              />
-            ) : currentCategory === 'tecnologia' ? (
-              /* If Category is TECNOLOGIA */
-              <TechSection
-                articles={articles}
-                onSelect={(art) => setSelectedArticle(art)}
-              />
-            ) : currentCategory === 'opinion' ? (
-              /* If Category is OPINION */
-              <OpinionSection
-                articles={articles}
-                onSelect={(art) => setSelectedArticle(art)}
-              />
-            ) : (
-              <>
-                {/* 1. LEAD HERO STORY */}
+            {/* 1. LEAD HERO STORY */}
                 {heroArticle && (
                   <section className="space-y-2">
                     <ArticleCard
@@ -684,8 +677,6 @@ export default function App() {
                     </div>
                   </section>
                 )}
-              </>
-            )}
           </>
         )}
       </main>

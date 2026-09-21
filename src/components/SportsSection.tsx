@@ -13,7 +13,9 @@ export const SportsSection: React.FC<SportsSectionProps> = ({ articles, onSelect
   const [activeTable, setActiveTable] = useState<'lidom' | 'champions'>('lidom');
 
   const sportsArticles = articles.filter(a => {
-    if (a.category !== 'deportes') return false;
+    const isSport = a.category === 'deportes' || 
+      (a.tags && a.tags.some(t => ['#deportes', '#lidom', '#beisbol', '#mlb', '#futbol', '#championsleague', '#nba'].includes(t.toLowerCase())));
+    if (!isSport) return false;
     if (scope === 'dominican') return a.isDominican;
     if (scope === 'global') return !a.isDominican;
     return true;
@@ -94,11 +96,22 @@ export const SportsSection: React.FC<SportsSectionProps> = ({ articles, onSelect
         {/* Left Column: Sports News */}
         <div className="lg:col-span-8 space-y-4">
           {sportsArticles.length === 0 ? (
-            <div className="p-12 text-center bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800">
-              <Trophy className="w-8 h-8 text-stone-400 mx-auto mb-2" />
-              <p className="text-sm font-bold text-stone-600 dark:text-stone-300">
-                No hay noticias deportivas en este filtro actualmente.
+            <div className="p-12 text-center bg-white dark:bg-stone-900 rounded-xl border border-stone-200 dark:border-stone-800 space-y-3">
+              <Trophy className="w-10 h-10 text-amber-600/70 mx-auto" />
+              <p className="text-sm font-bold text-stone-700 dark:text-stone-300">
+                No hay noticias deportivas en el filtro actual.
               </p>
+              <p className="text-xs text-stone-500 max-w-sm mx-auto">
+                Prueba alternando entre "Todos los Deportes", "Quisqueya & LIDOM" o "Mundial & Champions".
+              </p>
+              {scope !== 'all' && (
+                <button
+                  onClick={() => setScope('all')}
+                  className="px-3 py-1.5 bg-stone-900 text-white dark:bg-stone-100 dark:text-stone-900 rounded text-xs font-semibold hover:opacity-90 transition"
+                >
+                  Ver todos los deportes
+                </button>
+              )}
             </div>
           ) : (
             sportsArticles.map((art) => (

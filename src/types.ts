@@ -73,6 +73,51 @@ export interface RssFeedSource {
   reliability: 'high' | 'official' | 'trusted';
 }
 
+export interface StudioCameraFeed {
+  id: string;
+  name: string;
+  label: string;
+  cameraType: 'main' | 'commentators' | 'guests' | 'split';
+  previewImageUrl: string;
+  description: string;
+  viewAngle: string;
+}
+
+export interface StudioCommentator {
+  id: string;
+  name: string;
+  role: string;
+  avatarUrl: string;
+  isSpeaking?: boolean;
+  notes: string;
+  cameraRef: string;
+}
+
+export interface StudioGuest {
+  id: string;
+  name: string;
+  title: string;
+  organization: string;
+  avatarUrl: string;
+  topic: string;
+  connectionType: 'Presencial en Cabina' | 'Enlace Satelital 4K' | 'Llamada Telefónica';
+  isSpeaking?: boolean;
+  cameraRef: string;
+}
+
+export interface LiveStreamData {
+  channelName: string;
+  isLive: boolean;
+  viewerCount: number;
+  currentSegment: string;
+  programSchedule: string;
+  streamResolution: string;
+  cameras: StudioCameraFeed[];
+  commentators: StudioCommentator[];
+  guests: StudioGuest[];
+  tickerNews: string[];
+}
+
 export interface PodcastEpisode {
   id: string;
   title: string;
@@ -87,6 +132,8 @@ export interface PodcastEpisode {
   transcript: string;
   imageUrl: string;
   keyTakeaways: string[];
+  hasVideoStream?: boolean;
+  streamData?: LiveStreamData;
 }
 
 export interface UserPreferences {
