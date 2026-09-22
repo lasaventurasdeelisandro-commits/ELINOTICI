@@ -7,7 +7,8 @@ import { NewsArticle, SupportedLanguage, AdPlacement, AdSenseConfig, AdvertiserC
 import { SocialShareBar } from './SocialShareBar';
 import { SUPPORTED_LANGUAGES, t } from '../utils/translations';
 import { decodeHtmlEntities, formatSummaryPoint, cleanSummaryArray } from '../utils/textUtils';
-import { AdBanner } from './AdBanner';
+import { GoogleAdSenseUnit } from './GoogleAdSenseUnit';
+import { DirectSponsorUnit } from './DirectSponsorUnit';
 
 interface ArticleModalProps {
   article: NewsArticle | null;
@@ -273,15 +274,32 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
           {/* Social Share Bar */}
           <SocialShareBar article={article} variant="full" />
 
-          {/* In-Article Sponsored Banner (AdSense or Direct Sponsor) */}
+          {/* Espacios Publicitarios Divididos: Google AdSense y Patrocinio Directo */}
           {onOpenAdPortal && (
-            <div className="pt-2">
-              <AdBanner
-                placement="article_modal"
-                onOpenAdPortal={onOpenAdPortal}
-                config={adSenseConfig}
-                campaigns={campaigns}
-              />
+            <div className="space-y-4 pt-2">
+              <div>
+                <div className="text-[10px] font-bold tracking-wider uppercase text-blue-600 dark:text-blue-400 mb-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                  Bloque Google AdSense
+                </div>
+                <GoogleAdSenseUnit
+                  slot="article_modal"
+                  config={adSenseConfig}
+                  onOpenAdSenseConfig={() => onOpenAdPortal('article_modal')}
+                />
+              </div>
+
+              <div>
+                <div className="text-[10px] font-bold tracking-wider uppercase text-amber-600 dark:text-amber-400 mb-1 flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Anuncio Directo / Patrocinador Local
+                </div>
+                <DirectSponsorUnit
+                  placement="article_modal"
+                  campaigns={campaigns}
+                  onOpenDirectAdPortal={() => onOpenAdPortal('article_modal')}
+                />
+              </div>
             </div>
           )}
 

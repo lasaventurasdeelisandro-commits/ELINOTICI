@@ -711,14 +711,14 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
     id: 'pod-1',
     title: 'El Pulso de la Mañana: Claves de la economía dominicana y el auge del turismo',
     show: 'ELINOTICIA Matinal',
-    host: 'Carmen Lidia Santos & Lic. Mariano de la Cruz',
+    host: 'Lic. Elisandro Alvarez Baez & Lic. Esthefany Pichardo Ramirez',
     category: 'Economía & Análisis',
     duration: '14:20',
     durationSeconds: 860,
-    publishedAt: '2026-09-20T07:00:00Z',
+    publishedAt: '2026-09-22T07:00:00Z',
     audioUrl: 'https://cdn.freesound.org/previews/563/563148_11861866-lq.mp3',
     summary: 'Análisis detallado de las cifras del Banco Central, la apertura de nuevos vuelos en Punta Cana y Santiago, y la estabilidad de la canasta básica.',
-    transcript: `Bienvenidos a El Pulso de la Mañana de ELINOTICIA. Hoy revisamos las cifras que sitúan a República Dominicana como la economía con mayor proyección de crecimiento en el Caribe insular. Hablamos con analistas sobre el impacto de la inversión en Pedernales y el comportamiento del tipo de cambio frente al dólar estadounidense. En el segundo bloque, exploramos las perspectivas de la reforma tributaria integral y su impacto en la clase media trabajadora.`,
+    transcript: `Bienvenidos a El Pulso de la Mañana de ELINOTICIA en Cabina con el Lic. Elisandro Alvarez Baez y la Lic. Esthefany Pichardo Ramirez. Hoy revisamos las cifras que sitúan a República Dominicana como la economía con mayor proyección de crecimiento en el Caribe insular. Hablamos con analistas sobre el impacto de la inversión en Pedernales y el comportamiento del tipo de cambio frente al dólar estadounidense. En el segundo bloque, exploramos las perspectivas de la reforma tributaria integral y su impacto en la clase media trabajadora.`,
     imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?auto=format&fit=crop&w=800&q=80',
     keyTakeaways: [
       'Proyección de crecimiento del PIB de 5.1% según el Banco Central.',
@@ -730,7 +730,7 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
       channelName: 'ELINOTICIA TV • Canal 24 Digital',
       isLive: true,
       viewerCount: 2840,
-      currentSegment: 'Bloque Económico: Debate de Perspectivas Financieras 2026',
+      currentSegment: 'Bloque Económico: Debate de Perspectivas Financieras en Cabina',
       programSchedule: 'Lunes a Viernes • 7:00 AM - 10:00 AM AST',
       streamResolution: '1080p HD • 60 FPS',
       cameras: [
@@ -740,7 +740,7 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
           label: 'CAM 1 • Master',
           cameraType: 'main',
           previewImageUrl: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80',
-          description: 'Vista panorámica de la cabina de radiodifusión, micrófonos Shure y mesa de producción.',
+          description: 'Vista panorámica de la cabina de radiodifusión en vivo con los conductores en mesa.',
           viewAngle: 'Gran angular 24mm (Plano general de cabina)'
         },
         {
@@ -749,7 +749,7 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
           label: 'CAM 2 • Comentaristas',
           cameraType: 'commentators',
           previewImageUrl: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=1200&q=80',
-          description: 'Primer plano directo a los presentadores Carmen Lidia Santos y Lic. Mariano de la Cruz.',
+          description: 'Primer plano directo a la mesa principal: Lic. Elisandro Alvarez Baez y Lic. Esthefany Pichardo Ramirez.',
           viewAngle: 'Enfoque medio 50mm f/1.8 (Mesa de análisis)'
         },
         {
@@ -767,37 +767,28 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
           label: 'CAM 4 • Split Screen',
           cameraType: 'split',
           previewImageUrl: 'https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80',
-          description: 'Señal combinada en vivo: Comentarista en cabina e invitado en enlace con zócalo interactivo.',
+          description: 'Señal combinada en vivo: Comentaristas en cabina e invitado en enlace con zócalo interactivo.',
           viewAngle: 'Mezclador de producción de televisión'
         }
       ],
       commentators: [
         {
           id: 'comm-1',
-          name: 'Carmen Lidia Santos',
-          role: 'Directora de Contenidos & Analista de Coyuntura',
-          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=400&q=80',
+          name: 'Lic. Elisandro Alvarez Baez',
+          role: 'Director General & Conductor Principal en Cabina',
+          avatarUrl: '/commentators/elisandro-alvarez.jpg',
           isSpeaking: true,
-          notes: 'Conduce el bloque económico sobre divisas y reservas internacionales.',
+          notes: 'Conduce el bloque económico y editorial central de coyuntura nacional.',
           cameraRef: 'cam-2'
         },
         {
           id: 'comm-2',
-          name: 'Lic. Mariano de la Cruz',
-          role: 'Abogado Constitucionalista y Comentarista Político',
-          avatarUrl: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80',
+          name: 'Lic. Esthefany Pichardo Ramirez',
+          role: 'Co-Conductora & Especialista en Análisis Jurídico y Social',
+          avatarUrl: '/commentators/esthefany-pichardo.jpg',
           isSpeaking: false,
-          notes: 'Analiza el impacto legislativo de las nuevas reformas aduaneras y tributarias.',
+          notes: 'Analiza el impacto legislativo, reformas y opiniones ciudadanas en directo.',
           cameraRef: 'cam-2'
-        },
-        {
-          id: 'comm-3',
-          name: 'Lic. Yenier Ramírez',
-          role: 'Mesa de Datos & Reacciones Ciudadanas',
-          avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=400&q=80',
-          isSpeaking: false,
-          notes: 'Monitorea comentarios de WhatsApp y redes sociales de los oyentes.',
-          cameraRef: 'cam-1'
         }
       ],
       guests: [
@@ -829,7 +820,7 @@ export const INITIAL_PODCASTS: PodcastEpisode[] = [
         'TURISMO RD: Aeropuertos de Punta Cana y Santiago registran nuevo récord histórico de pasajeros.',
         'TASA DE CAMBIO: Dólar cotiza a RD$59.90 compra / RD$60.15 venta en ventanilla bancaria.',
         'REFORMA FISCAL: Mesa de diálogo convoca a sectores empresariales, laborales y académicos.',
-        'EN VIVO: Envía tus preguntas por WhatsApp al (809) 555-ELINOTICIA para Carmen Lidia y panelistas.'
+        'EN VIVO: Envía tus preguntas por WhatsApp al (809) 555-ELINOTICIA para Lic. Elisandro Alvarez y Lic. Esthefany Pichardo.'
       ]
     }
   },

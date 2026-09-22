@@ -5,7 +5,12 @@ import {
   AdPlacement, AdvertiserCampaign, AdSenseConfig, DirectAdPlan
 } from './types';
 import { INITIAL_ARTICLES, INITIAL_FEEDS, INITIAL_PODCASTS } from './data/initialData';
-import { executeClientRssSync } from './services/clientRssSync';
+import { 
+  executeClientRssSync, 
+  isClientSyncDue, 
+  getNextScheduledClientSync, 
+  AUTO_SYNC_INTERVAL_MS 
+} from './services/clientRssSync';
 import { Header } from './components/Header';
 import { CurrencyExchangeBar } from './components/CurrencyExchangeBar';
 import { BreakingNewsTicker } from './components/BreakingNewsTicker';
@@ -20,7 +25,8 @@ import { RssConfigModal } from './components/RssConfigModal';
 import { PreferencesModal } from './components/PreferencesModal';
 import { SubscriptionModal } from './components/SubscriptionModal';
 import { NotificationToast } from './components/NotificationToast';
-import { AdBanner } from './components/AdBanner';
+import { GoogleAdSenseUnit } from './components/GoogleAdSenseUnit';
+import { DirectSponsorUnit } from './components/DirectSponsorUnit';
 import { AdvertisingModal } from './components/AdvertisingModal';
 import { Footer } from './components/Footer';
 import { 
@@ -245,8 +251,44 @@ export default function App() {
           });
         }
       } else {
-        // Backend not available (e.g. running on static GitHub Pages)
+        // Backend not available (e.g. running on static GitHub Pages or server offline)
         setIsServerMode(false);
+        
+        // 1. Restore cached articles and sync timestamps from localStorage
+        let hasArticles = false;
+        try {
+          const cached = localStorage.getItem('elinoticia_cached_articles');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setArticles(parsed);
+              hasArticles = true;
+            }
+          }
+          const lastSync = localStorage.getItem('elinoticia_last_sync_time');
+          if (lastSync) setLastSyncTime(lastSync);
+          setNextScheduledSync(getNextScheduledClientSync());
+        } catch (e) {}
+
+        // 2. Autonomous 3-Hour Refresh Check:
+        // If more than 3 hours have passed since last sync or first visit, sync directly from RSS feeds right now!
+        if (isClientSyncDue() || !hasArticles) {
+          executeClientRssSync(articles, INITIAL_FEEDS).then((res) => {
+            if (res && res.articles && res.articles.length > 0) {
+              setArticles(res.articles);
+              const nowIso = new Date().toISOString();
+              setLastSyncTime(nowIso);
+              setNextScheduledSync(getNextScheduledClientSync());
+              setLastSyncNewArticlesCount(res.newArticlesCount);
+              setStats((prev) => ({
+                ...prev,
+                verifiedPublished: res.articles.length,
+              }));
+            }
+          }).catch((err) => {
+            console.warn('[AutoSync] Background client RSS sync notice:', err);
+          });
+        }
       }
 
       if (feedsRes && feedsRes.ok) {
@@ -307,7 +349,19 @@ export default function App() {
       loadData(true);
     }, 30000);
 
-    return () => clearInterval(interval);
+    // Autonomous 3-Hour Cycle Checker (runs every 60 seconds)
+    // Ensures that if the page stays open, exactly every 3 hours news is freshly fetched directly from RSS
+    const autoSyncInterval = setInterval(() => {
+      if (isClientSyncDue()) {
+        console.log('[ELINOTICIA] Ciclo automático de 3 horas alcanzado. Ejecutando actualización...');
+        handleTriggerSync();
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(interval);
+      clearInterval(autoSyncInterval);
+    };
   }, [loadData]);
 
   // Trigger manual RSS sync (server-side with browser fallback for GitHub Pages)
@@ -552,13 +606,20 @@ export default function App() {
         lang={preferences.language}
       />
 
-      {/* Top Leaderboard Ad Banner (Google AdSense / Direct Sponsor) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
-        <AdBanner
-          placement="header_top"
-          onOpenAdPortal={handleOpenAdPortal}
+      {/* Top Advertising Section (Divided into Google AdSense & Direct Sponsors) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4 space-y-3">
+        <GoogleAdSenseUnit
+          slot="header_top"
           config={adMonetization?.config}
+          onOpenAdSenseConfig={() => handleOpenAdPortal('header_top')}
+          format="horizontal"
+        />
+
+        <DirectSponsorUnit
+          placement="header_top"
           campaigns={adMonetization?.campaigns}
+          onOpenDirectAdPortal={() => handleOpenAdPortal('header_top')}
+          variant="banner"
         />
       </div>
 
@@ -589,24 +650,36 @@ export default function App() {
           </div>
         )}
 
-        {/* Live sync status alert bar */}
-        <div className="flex flex-wrap items-center justify-between text-xs text-stone-500 dark:text-stone-400 border-b border-stone-200 dark:border-stone-800 pb-2">
+        {/* Live sync & 3-hour autonomous status banner */}
+        <div className="bg-stone-50 dark:bg-stone-900/60 border border-stone-200 dark:border-stone-800/80 rounded-xl p-3 flex flex-wrap items-center justify-between gap-3 text-xs text-stone-600 dark:text-stone-300 shadow-2xs">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>Edición Continua en Tiempo Real</span>
-            <span>•</span>
-            <span>Próxima ingestión automática de feeds en: <strong>{new Date(nextScheduledSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></span>
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span className="font-semibold text-stone-900 dark:text-stone-100">
+              Actualización Automática cada 3 Horas: <span className="text-emerald-700 dark:text-emerald-400 font-bold">Activa</span>
+            </span>
+            <span className="hidden sm:inline text-stone-400">•</span>
+            <span className="text-stone-500 dark:text-stone-400">
+              Próxima renovación: <strong className="text-stone-800 dark:text-stone-200">{new Date(nextScheduledSync).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong>
+            </span>
+            {!isServerMode && (
+              <span className="hidden md:inline bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300 text-[10px] font-mono px-2 py-0.5 rounded font-semibold">
+                GitHub Autónomo RSS
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">
-            <span>{filteredArticles.length} notas verificadas</span>
+            <span className="font-mono text-stone-500">{filteredArticles.length} artículos en portada</span>
             <button
               onClick={handleTriggerSync}
               disabled={isSyncing}
-              className="hover:text-amber-600 flex items-center gap-1 font-semibold"
-              title="Actualizar ahora"
+              className="px-3 py-1 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+              title="Forzar actualización de noticias en vivo"
             >
-              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? 'Sincronizando...' : 'Actualizar ahora'}</span>
             </button>
           </div>
@@ -677,13 +750,22 @@ export default function App() {
                   </section>
                 )}
 
-                {/* In-Feed Mid-Page Banner (Google AdSense / Direct Sponsor) */}
-                <AdBanner
-                  placement="in_feed"
-                  onOpenAdPortal={handleOpenAdPortal}
-                  config={adMonetization?.config}
-                  campaigns={adMonetization?.campaigns}
-                />
+                {/* Espacios Publicitarios Divididos en Flujo de Portada */}
+                <div className="space-y-4 py-2">
+                  <GoogleAdSenseUnit
+                    slot="in_feed"
+                    config={adMonetization?.config}
+                    onOpenAdSenseConfig={() => handleOpenAdPortal('in_feed')}
+                    format="horizontal"
+                  />
+
+                  <DirectSponsorUnit
+                    placement="in_feed"
+                    campaigns={adMonetization?.campaigns}
+                    onOpenDirectAdPortal={() => handleOpenAdPortal('in_feed')}
+                    variant="banner"
+                  />
+                </div>
 
                 {/* 2. THREE-COLUMN BROADSHEET GRID */}
                 <section className="space-y-4">
@@ -758,13 +840,20 @@ export default function App() {
         )}
       </main>
 
-      {/* Pre-Footer Leaderboard Banner (Google AdSense / Direct Sponsor) */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-        <AdBanner
-          placement="footer_banner"
-          onOpenAdPortal={handleOpenAdPortal}
+      {/* Pre-Footer Divided Ad Units (Google AdSense & Direct Sponsor) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-3">
+        <GoogleAdSenseUnit
+          slot="footer_banner"
           config={adMonetization?.config}
+          onOpenAdSenseConfig={() => handleOpenAdPortal('footer_banner')}
+          format="horizontal"
+        />
+
+        <DirectSponsorUnit
+          placement="footer_banner"
           campaigns={adMonetization?.campaigns}
+          onOpenDirectAdPortal={() => handleOpenAdPortal('footer_banner')}
+          variant="banner"
         />
       </div>
 

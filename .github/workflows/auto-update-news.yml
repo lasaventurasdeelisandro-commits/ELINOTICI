@@ -1,0 +1,52 @@
+name: Actualización Automática de Noticias ELINOTICIA (Cada 3 Horas)
+
+on:
+  schedule:
+    # Se ejecuta de forma 100% automática cada 3 horas (00:00, 03:00, 06:00, 09:00, 12:00, 15:00, 18:00, 21:00 UTC)
+    - cron: '0 */3 * * *'
+  workflow_dispatch: # Botón manual en la pestaña 'Actions' de GitHub para forzar actualización al instante
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'news-updater'
+  cancel-in-progress: true
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Clonar repositorio
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: ⚙️ Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 📦 Instalar dependencias
+        run: npm ci || npm install
+
+      - name: 📰 Ingestar últimas noticias de canales RSS dominicanos e internacionales
+        run: node scripts/github-rss-updater.cjs
+
+      - name: 🏗️ Compilar portal estático con noticias frescas
+        run: npm run build
+
+      - name: 💾 Guardar y comitear noticias actualizadas en el repositorio
+        run: |
+          git config --global user.name "ELINOTICIA Bot"
+          git config --global user.email "bot@elinoticia.com"
+          git add public/data/
+          if git diff --staged --quiet; then
+            echo "No hay cambios nuevos en las noticias."
+          else
+            git commit -m "chore(noticias): actualización automática cada 3 horas [skip ci]"
+            git push
+          fi

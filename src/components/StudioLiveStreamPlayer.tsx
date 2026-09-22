@@ -27,7 +27,7 @@ const INITIAL_MESSAGES: ChatMessage[] = [
     id: 'm-1',
     author: 'Carlos Gómez',
     location: 'Santiago de los Caballeros',
-    text: 'Saludos a doña Carmen Lidia y al Licenciado. Muy acertado el análisis sobre el crecimiento económico.',
+    text: 'Saludos al Lic. Elisandro Alvarez y a la Lic. Esthefany Pichardo. Excelente análisis en cabina.',
     timestamp: 'Hace 3 min'
   },
   {
@@ -176,9 +176,9 @@ export const StudioLiveStreamPlayer: React.FC<StudioLiveStreamPlayerProps> = ({
                 <div className="absolute bottom-3 left-3 right-3 bg-stone-950/90 backdrop-blur p-2 rounded border border-stone-700/80">
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span className="font-bold text-xs text-white">Carmen Lidia Santos</span>
+                    <span className="font-bold text-xs text-white">Lic. Elisandro Alvarez & Lic. Esthefany Pichardo</span>
                   </div>
-                  <p className="text-[10px] text-stone-300">Directora Editorial • En el aire</p>
+                  <p className="text-[10px] text-stone-300">Conductores en Cabina • En el aire</p>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ export const StudioLiveStreamPlayer: React.FC<StudioLiveStreamPlayerProps> = ({
               {streamData.currentSegment}
             </h4>
             <div className="flex items-center gap-3 text-xs text-stone-300 mt-1">
-              <span className="text-amber-400 font-medium">Conductores: Carmen Lidia Santos & Lic. Mariano de la Cruz</span>
+              <span className="text-amber-400 font-medium">Conductores: Lic. Elisandro Alvarez Baez & Lic. Esthefany Pichardo Ramirez</span>
               <span className="text-stone-600 hidden sm:inline">•</span>
               <span className="text-sky-300 hidden sm:inline">Invitado: Ing. Roberto Herrera</span>
             </div>
