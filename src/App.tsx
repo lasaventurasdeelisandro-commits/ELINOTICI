@@ -11,6 +11,7 @@ import {
   getNextScheduledClientSync, 
   AUTO_SYNC_INTERVAL_MS 
 } from './services/clientRssSync';
+import { scanAndDeduplicateArticles } from './services/imageContextMatcher';
 import { Header } from './components/Header';
 import { CurrencyExchangeBar } from './components/CurrencyExchangeBar';
 import { BreakingNewsTicker } from './components/BreakingNewsTicker';
@@ -55,11 +56,11 @@ export default function App() {
         const cached = localStorage.getItem('elinoticia_cached_articles');
         if (cached) {
           const parsed = JSON.parse(cached);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) return scanAndDeduplicateArticles(parsed);
         }
       } catch (e) {}
     }
-    return INITIAL_ARTICLES;
+    return scanAndDeduplicateArticles(INITIAL_ARTICLES);
   });
 
   const [feeds, setFeeds] = useState<RssFeedSource[]>(() => {
@@ -218,9 +219,10 @@ export default function App() {
         setIsServerMode(true);
         const newsData = await newsRes.json();
         if (newsData.success && Array.isArray(newsData.data) && newsData.data.length > 0) {
-          setArticles(newsData.data);
+          const deduplicated = scanAndDeduplicateArticles(newsData.data);
+          setArticles(deduplicated);
           try {
-            localStorage.setItem('elinoticia_cached_articles', JSON.stringify(newsData.data));
+            localStorage.setItem('elinoticia_cached_articles', JSON.stringify(deduplicated));
           } catch (e) {}
 
           // Check for new breaking alerts
@@ -261,7 +263,7 @@ export default function App() {
           if (cached) {
             const parsed = JSON.parse(cached);
             if (Array.isArray(parsed) && parsed.length > 0) {
-              setArticles(parsed);
+              setArticles(scanAndDeduplicateArticles(parsed));
               hasArticles = true;
             }
           }

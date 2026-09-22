@@ -7,6 +7,7 @@ import { NewsArticle } from '../types';
 import { SocialShareBar } from './SocialShareBar';
 import { t } from '../utils/translations';
 import { decodeHtmlEntities, formatSummaryPoint } from '../utils/textUtils';
+import { getContextualFallbackPhoto } from '../services/imageContextMatcher';
 
 interface ArticleCardProps {
   article: NewsArticle;
@@ -47,7 +48,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
               className="w-full h-full object-cover group-hover:scale-102 transition duration-500"
               loading="lazy"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1200&q=80';
+                (e.currentTarget as HTMLImageElement).src = getContextualFallbackPhoto(article.title, article.category);
               }}
             />
             {article.isBreaking && (
@@ -174,7 +175,7 @@ export const ArticleCard: React.FC<ArticleCardProps> = ({
             className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
             loading="lazy"
             onError={(e) => {
-              (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1200&q=80';
+              (e.currentTarget as HTMLImageElement).src = getContextualFallbackPhoto(article.title, article.category);
             }}
           />
           {article.isBreaking && (

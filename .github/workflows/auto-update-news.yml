@@ -33,7 +33,7 @@ jobs:
       - name: 📦 Instalar dependencias
         run: npm ci || npm install
 
-      - name: 📰 Ingestar últimas noticias de canales RSS dominicanos e internacionales
+      - name: 📰 Ingestar noticias con fotos contextuales y anti-repetición
         run: node scripts/github-rss-updater.cjs
 
       - name: 🏗️ Compilar portal estático con noticias frescas
@@ -47,6 +47,17 @@ jobs:
           if git diff --staged --quiet; then
             echo "No hay cambios nuevos en las noticias."
           else
-            git commit -m "chore(noticias): actualización automática cada 3 horas [skip ci]"
-            git push
+            git commit -m "chore(noticias): actualización periódica de titulares y fotos contextuales"
+            git push origin HEAD || echo "Push omitido o sin cambios remotos pendientes"
           fi
+
+      - name: 🚀 Subir artefacto para GitHub Pages (si está habilitado vía Actions)
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: './dist'
+        continue-on-error: true
+
+      - name: 🌐 Desplegar en GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        continue-on-error: true

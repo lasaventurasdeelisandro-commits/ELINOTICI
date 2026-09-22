@@ -16,11 +16,11 @@ function stripHtml(html: any): string {
   return cleanJournalisticText(html);
 }
 
-function extractImage(item: any, title: string = '', category: string = ''): string {
+function extractImage(item: any, title: string = '', category: string = '', excerpt: string = ''): string {
   // Check enclosure
   if (item.enclosure && item.enclosure['@_url']) {
     const encUrl = String(item.enclosure['@_url']);
-    if (encUrl.startsWith('http') && !encUrl.includes('cleardot.gif')) {
+    if (encUrl.startsWith('http') && !encUrl.includes('cleardot.gif') && !encUrl.includes('feedburner')) {
       return encUrl;
     }
   }
@@ -29,7 +29,7 @@ function extractImage(item: any, title: string = '', category: string = ''): str
     const mc = Array.isArray(item['media:content']) ? item['media:content'][0] : item['media:content'];
     if (mc && mc['@_url']) {
       const mcUrl = String(mc['@_url']);
-      if (mcUrl.startsWith('http') && !mcUrl.includes('cleardot.gif')) {
+      if (mcUrl.startsWith('http') && !mcUrl.includes('cleardot.gif') && !mcUrl.includes('feedburner')) {
         return mcUrl;
       }
     }
@@ -39,7 +39,7 @@ function extractImage(item: any, title: string = '', category: string = ''): str
     const mt = Array.isArray(item['media:thumbnail']) ? item['media:thumbnail'][0] : item['media:thumbnail'];
     if (mt && mt['@_url']) {
       const mtUrl = String(mt['@_url']);
-      if (mtUrl.startsWith('http') && !mtUrl.includes('cleardot.gif')) {
+      if (mtUrl.startsWith('http') && !mtUrl.includes('cleardot.gif') && !mtUrl.includes('feedburner')) {
         return mtUrl;
       }
     }
@@ -52,7 +52,7 @@ function extractImage(item: any, title: string = '', category: string = ''): str
   }
 
   // Dynamic contextual journalism photo from high-resolution catalog with weighted relevance scoring
-  return getContextualArticlePhoto(title, category);
+  return getContextualArticlePhoto(title, category, undefined, excerpt);
 }
 
 /**
@@ -123,7 +123,7 @@ export async function processFeed(feed: RssFeedSource): Promise<number> {
 
       const link = item.link ? (typeof item.link === 'string' ? item.link : item.link['@_href'] || item.link['#text'] || '') : '';
       const pubDate = item.pubDate || item.published || item.updated || new Date().toISOString();
-      const imageUrl = extractImage(item, cleanTitle, feed.category);
+      const imageUrl = extractImage(item, cleanTitle, feed.category, cleanContent);
 
       // Verify and enhance with AI
       const aiResult = await verifyAndEnhanceNews(

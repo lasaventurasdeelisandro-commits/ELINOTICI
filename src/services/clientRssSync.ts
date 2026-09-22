@@ -8,6 +8,7 @@
 
 import { NewsArticle, RssFeedSource } from '../types';
 import { cleanJournalisticText, decodeHtmlEntities } from '../utils/textUtils';
+import { matchArticleToContextualPhoto, scanAndDeduplicateArticles } from './imageContextMatcher';
 
 const CORS_PROXIES = [
   (url: string) => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
@@ -49,46 +50,8 @@ export function getNextScheduledClientSync(): string {
   return new Date(Date.now() + AUTO_SYNC_INTERVAL_MS).toISOString();
 }
 
-/**
- * High-definition contextual photos for client-side fallback
- */
-const DEFAULT_CATEGORY_IMAGES: Record<string, string[]> = {
-  rd: [
-    'https://images.unsplash.com/photo-1590402494682-cd3fb53b1f70?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1577495508048-b635879837f1?auto=format&fit=crop&w=1200&q=80',
-  ],
-  economia: [
-    'https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&q=80',
-  ],
-  deportes: [
-    'https://images.unsplash.com/photo-1508344928928-7165b67de128?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
-  ],
-  mundo: [
-    'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?auto=format&fit=crop&w=1200&q=80',
-  ],
-  tecnologia: [
-    'https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1200&q=80',
-  ],
-  opinion: [
-    'https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=1200&q=80',
-    'https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1200&q=80',
-  ],
-};
-
-function getFallbackImage(category: string, index: number): string {
-  const pool = DEFAULT_CATEGORY_IMAGES[category] || DEFAULT_CATEGORY_IMAGES.rd;
-  return pool[index % pool.length];
+function getFallbackImage(title: string, excerpt: string, category: string): string {
+  return matchArticleToContextualPhoto(title, excerpt, category);
 }
 
 /**
@@ -185,7 +148,7 @@ export function parseFeedXml(xmlText: string, feed: RssFeedSource): NewsArticle[
       }
 
       if (!imageUrl || !imageUrl.startsWith('http')) {
-        imageUrl = getFallbackImage(feed.category, idx);
+        imageUrl = getFallbackImage(title, excerpt, feed.category);
       }
 
       const domain = feed.url ? new URL(feed.url).hostname.replace('www.', '') : 'fuente-noticiosa';
@@ -310,7 +273,7 @@ export async function executeClientRssSync(
     }
   });
 
-  const combined = [...newlyFetchedArticles, ...existingArticles].slice(0, 60);
+  const combined = scanAndDeduplicateArticles([...newlyFetchedArticles, ...existingArticles]).slice(0, 60);
   const nowIso = new Date().toISOString();
   const nextSyncIso = new Date(Date.now() + AUTO_SYNC_INTERVAL_MS).toISOString();
 

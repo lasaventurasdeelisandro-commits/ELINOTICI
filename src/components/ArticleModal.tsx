@@ -9,6 +9,7 @@ import { SUPPORTED_LANGUAGES, t } from '../utils/translations';
 import { decodeHtmlEntities, formatSummaryPoint, cleanSummaryArray } from '../utils/textUtils';
 import { GoogleAdSenseUnit } from './GoogleAdSenseUnit';
 import { DirectSponsorUnit } from './DirectSponsorUnit';
+import { getContextualFallbackPhoto } from '../services/imageContextMatcher';
 
 interface ArticleModalProps {
   article: NewsArticle | null;
@@ -254,7 +255,7 @@ export const ArticleModal: React.FC<ArticleModalProps> = ({
               alt={title}
               className="w-full max-h-[440px] object-cover"
               onError={(e) => {
-                (e.currentTarget as HTMLImageElement).src = 'https://images.unsplash.com/photo-1495020689067-958852a7765e?auto=format&fit=crop&w=1200&q=80';
+                (e.currentTarget as HTMLImageElement).src = getContextualFallbackPhoto(article.title, article.category);
               }}
             />
             {article.imageCaption && (
